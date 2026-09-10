@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .bg{fill:#faf9f5}.ink{fill:#211f1c}
+    @media (prefers-color-scheme:dark){.bg{fill:#211f1b}.ink{fill:#eae6dd}}
+  </style>
+  <rect class="bg" width="64" height="64" rx="14"/>
+  <text class="ink" x="27" y="48" text-anchor="middle" font-weight="700"
+        font-family="Georgia, 'Times New Roman', serif" font-size="46">p</text>
+  <circle cx="46" cy="42" r="6" fill="#d97757"/>
+</svg>

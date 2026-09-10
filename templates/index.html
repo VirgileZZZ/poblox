@@ -1,0 +1,2765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, interactive-widget=resizes-content">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#faf9f5">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg">
+<link rel="apple-touch-icon" href="/static/icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="poblox">
+<title>poblox</title>
+<script>/* applique le thème mémorisé avant le premier rendu */
+try{document.documentElement.dataset.theme =
+  localStorage.getItem("theme") || "clair";}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#faf9f5;          /* papier chaud */
+  --surface:#ffffff;     /* cartes */
+  --ink:#211f1c;         /* texte */
+  --muted:#7a7468;
+  --border:#e8e4da;
+  --accent:#d97757;      /* terre cuite */
+  --accent-dark:#b85c3e;
+  --accent-soft:rgba(217,119,87,.12);
+  --ok:#337a5b;
+  --ok-soft:rgba(51,122,91,.10);
+  --bad:#b3372a;
+  --overlay:rgba(250,249,245,.96);
+  --btn2-bg:#211f1c;     /* bouton secondaire + toasts */
+  --btn2-fg:#ffffff;
+  --btn2-hover:#3c3831;
+  --chip1:#eaf0e4; --chip2:#f7ecd8; --chip3:#f6e0cd; --chip4:#f3d3ca;
+  /* alias hérités, encore référencés par le JS */
+  --line:var(--ink);
+  --paper:var(--surface);
+  --crayon-j:var(--accent);
+  --crayon-c:var(--accent-dark);
+  --crayon-t:var(--ok);
+  --crayon-v:var(--muted);
+}
+html[data-theme="sombre"]{
+  color-scheme: dark;
+  --bg:#161512; --surface:#211f1b; --ink:#eae6dd; --muted:#a09a8d;
+  --border:#3a362e;
+  --accent:#d97757; --accent-dark:#e08a6d;
+  --accent-soft:rgba(217,119,87,.18);
+  --ok:#7dc4a2; --ok-soft:rgba(125,196,162,.14); --bad:#e0685a;
+  --overlay:rgba(22,21,18,.96);
+  --btn2-bg:#eae6dd; --btn2-fg:#211f1c; --btn2-hover:#ffffff;
+  --chip1:#2c332a; --chip2:#383026; --chip3:#3a2d24; --chip4:#3a2823;
+}
+html[data-theme="ocean"]{
+  --bg:#f2f6f8; --surface:#ffffff; --ink:#1a2530; --muted:#64748b;
+  --border:#dce4ea;
+  --accent:#2f7fa6; --accent-dark:#256a8c;
+  --accent-soft:rgba(47,127,166,.12);
+  --overlay:rgba(242,246,248,.96);
+  --btn2-bg:#1a2530; --btn2-hover:#31404f;
+}
+html[data-theme="foret"]{
+  --bg:#f4f6f0; --surface:#ffffff; --ink:#21261c; --muted:#767b6a;
+  --border:#dfe3d3;
+  --accent:#4f7a45; --accent-dark:#40653a;
+  --accent-soft:rgba(79,122,69,.12);
+  --overlay:rgba(244,246,240,.96);
+  --btn2-bg:#21261c; --btn2-hover:#39402f;
+}
+html[data-theme="sorbet"]{
+  --bg:#fdf4f2; --surface:#ffffff; --ink:#2b2024; --muted:#8a7480;
+  --border:#f0dcd8;
+  --accent:#d6537a; --accent-dark:#b83f63;
+  --accent-soft:rgba(214,83,122,.12);
+  --overlay:rgba(253,244,242,.96);
+  --btn2-bg:#2b2024; --btn2-hover:#463339;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Inter",system-ui,sans-serif;font-weight:400;font-size:15px;
+  color:var(--ink);background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+  overscroll-behavior:none; /* pas de pull-to-refresh en plein dessin */
+}
+h1,h2,.hand{font-family:"Source Serif 4",Georgia,serif;font-weight:600;
+  letter-spacing:-.01em}
+.mono{font-family:"IBM Plex Mono",monospace}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+/* ------- cartes (signature : blanc, bordure fine, ombre discrète) ------- */
+.sticker{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 1px 2px rgba(33,31,28,.05);
+}
+
+/* ================= hub d'accueil ================= */
+#home{max-width:460px;width:92%;margin:auto;text-align:center;padding:32px 0}
+#home h1{font-size:54px;line-height:1.05}
+#home h1 span{color:var(--accent)}
+#home p{color:var(--muted);margin:10px 0 26px;font-size:15px}
+#home input{
+  width:100%;font:inherit;font-weight:500;text-align:center;font-size:16px;
+  padding:12px 14px;border:1px solid var(--border);border-radius:10px;
+  margin-bottom:14px;background:var(--surface);color:var(--ink);
+}
+#home input::placeholder{color:var(--muted)}
+#home input:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+#home .row input{font-family:"IBM Plex Mono",monospace;font-weight:600;
+  letter-spacing:.3em}
+#home .foot{font-size:12.5px;color:var(--muted);margin:16px 0 0}
+.btn{
+  font:600 15px "Inter",sans-serif;cursor:pointer;color:#fff;
+  padding:11px 18px;border:1px solid transparent;border-radius:10px;
+  background:var(--accent);
+  transition:background .12s, transform .08s;width:100%;
+}
+.btn:hover{background:var(--accent-dark)}
+.btn:active{transform:translateY(1px)}
+.btn.alt{background:var(--btn2-bg);color:var(--btn2-fg)}
+.btn.alt:hover{background:var(--btn2-hover)}
+.btn.small{width:auto;font-size:14px;padding:8px 13px}
+.row{display:flex;gap:10px}
+.row .btn{flex:1;width:auto}
+#homeErr{color:var(--bad);min-height:22px;margin-top:10px;font-weight:600;
+  font-size:14px}
+
+/* cartes de jeu */
+.gamecards{display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  margin:8px 0 6px}
+.gamecards .wave,.gamecards .agar{grid-column:1 / -1}
+.gamecard{
+  flex:1;cursor:pointer;text-align:left;padding:18px 16px 16px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;box-shadow:0 1px 2px rgba(33,31,28,.05);
+  transition:border-color .12s, box-shadow .12s, transform .12s;
+  font-family:inherit;color:inherit;
+}
+.gamecard:hover{border-color:var(--ink);transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(33,31,28,.08)}
+.gamecard:active{transform:translateY(0)}
+.gamecard.sel{border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+.gamecard .ico{height:30px;display:flex;align-items:center;gap:3px;
+  margin-bottom:12px}
+.gamecard .ico .lt{
+  width:18px;height:21px;display:grid;place-items:center;
+  font:600 11px "IBM Plex Mono",monospace;color:var(--ink);
+  background:var(--bg);border:1px solid var(--border);border-radius:5px}
+.gamecard .ico .lt.hot{background:var(--accent);border-color:var(--accent);
+  color:#fff}
+.gamecard .ico .gapx{width:5px}
+.gamecard .ttl{font-family:"Source Serif 4",Georgia,serif;font-weight:600;
+  font-size:22px;margin:0 0 4px}
+.gamecard .sub{font-size:13px;color:var(--muted);line-height:1.45}
+.orjoin{color:var(--muted);font-weight:600;font-size:12px;margin:20px 0 12px;
+  letter-spacing:.08em;text-transform:uppercase;
+  display:flex;align-items:center;gap:12px}
+.orjoin::before,.orjoin::after{content:"";flex:1;height:1px;
+  background:var(--border)}
+
+/* ================= réglages (thème + compte) ================= */
+#settingsBtn{
+  position:fixed;top:14px;right:14px;z-index:90;
+  width:38px;height:38px;display:grid;place-items:center;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  color:var(--muted);font-size:17px;cursor:pointer;
+  transition:border-color .12s, color .12s}
+#settingsBtn:hover{border-color:var(--ink);color:var(--ink)}
+#settingsModal{
+  position:fixed;inset:0;z-index:100;display:none;
+  align-items:center;justify-content:center;padding:16px;
+  background:rgba(0,0,0,.4)}
+.panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  width:100%;max-width:420px;padding:22px;max-height:92dvh;overflow-y:auto;
+  text-align:left;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.panelHead{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px}
+.panelHead h2{font-size:24px}
+#settingsClose{background:none;border:none;font-size:18px;cursor:pointer;
+  color:var(--muted);padding:4px 8px}
+#settingsClose:hover{color:var(--ink)}
+.panel h3{font-family:"Inter",sans-serif;font-size:12px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  margin:18px 0 10px}
+.panel h3:first-of-type{margin-top:0}
+.themes{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.themeOpt{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:9px 4px 7px;cursor:pointer;font:500 11.5px "Inter",sans-serif;
+  color:var(--ink);background:var(--bg);
+  border:1px solid var(--border);border-radius:10px;
+  transition:border-color .12s}
+.themeOpt:hover{border-color:var(--ink)}
+.themeOpt.sel{border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+.themeOpt .dots{display:flex;gap:3px}
+.themeOpt .dots i{width:12px;height:12px;border-radius:50%;
+  border:1px solid rgba(0,0,0,.15)}
+/* profil : grille d'avatars + stats */
+.avatars{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;
+  margin-bottom:12px}
+.avOpt{font-size:20px;line-height:1;padding:7px 0;cursor:pointer;
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  transition:border-color .12s}
+.avOpt:hover{border-color:var(--ink)}
+.avOpt.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* hub : pseudo + bouton avatar */
+.namerow{display:flex;gap:8px;align-items:stretch}
+.namerow input{flex:1;min-width:0}
+#avatarBtn{flex:none;width:46px;font-size:20px;line-height:1;cursor:pointer;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  transition:border-color .12s}
+#avatarBtn:hover{border-color:var(--ink)}
+#homeAvatars{margin:10px 0 2px}
+.statline{font-size:13px;color:var(--muted);margin:0 0 6px}
+.statline b{color:var(--ink)}
+.panel input{
+  width:100%;font:inherit;font-size:15px;padding:10px 12px;
+  border:1px solid var(--border);border-radius:10px;margin-bottom:10px;
+  background:var(--surface);color:var(--ink)}
+.panel input:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+.panel .foot{font-size:12px;color:var(--muted);margin-top:10px}
+#accMsg,#admMsg{min-height:20px;margin-top:10px;font-weight:600;
+  font-size:13.5px;color:var(--bad)}
+#accMsg.good,#admMsg.good{color:var(--ok)}
+#accIn p{margin-bottom:12px}
+@media (max-width:900px){
+  #settingsBtn{top:10px;right:10px;width:34px;height:34px}
+  .themes{grid-template-columns:repeat(3,1fr)}
+  .avatars{grid-template-columns:repeat(6,1fr)}
+}
+
+/* ================= barre commune de jeu ================= */
+.screen{display:none;width:100%;max-width:1180px;padding:12px;gap:12px;
+  flex-direction:column;flex:1}
+.topbar{display:flex;align-items:center;gap:14px;padding:8px 16px;
+  color:var(--ink);min-width:0}
+/* le texte du milieu peut rétrécir, mais jamais pousser ⚙ et le chrono
+   hors de l'écran */
+.topbar .logo,.roomTag,.topGear,.timer{flex:none;white-space:nowrap}
+.subTag,#lvlTag{min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.topbar .logo{font-size:24px;cursor:pointer}
+.topbar .logo span{color:var(--accent)}
+.roomTag{background:var(--surface);color:var(--ink);padding:3px 12px;
+  border:1px solid var(--border);border-radius:8px;
+  font-family:"IBM Plex Mono",monospace;font-weight:600;letter-spacing:3px;
+  cursor:pointer}
+.subTag{color:var(--muted);font-size:13px}
+.topGear{margin-left:auto;background:var(--surface);color:var(--muted);
+  border:1px solid var(--border);border-radius:8px;cursor:pointer;
+  font-size:15px;line-height:1;padding:5px 10px;
+  transition:border-color .12s, color .12s}
+.topGear:hover{border-color:var(--ink);color:var(--ink)}
+.timer{font-family:"IBM Plex Mono",monospace;font-weight:600;
+  font-size:26px;color:var(--ink);min-width:58px;text-align:right}
+.timer.urgent{color:var(--bad);animation:pulse .6s infinite alternate}
+@keyframes pulse{to{transform:scale(1.14)}}
+
+/* mot / préfixe : tuiles de lettres */
+.wordbar{display:flex;justify-content:center;align-items:center;gap:6px;
+  min-height:46px;flex-wrap:wrap}
+.tile{
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:22px;
+  line-height:1;color:var(--ink);
+  border-bottom:3px solid var(--ink);min-width:22px;text-align:center;
+  padding:2px 2px 5px;text-transform:uppercase}
+.tile.space{border:none;min-width:14px}
+.tile.hot{color:var(--accent-dark);border-color:var(--accent)}
+.tile.dots{border:none;color:var(--muted)}
+.wordLabel{color:var(--muted);font-size:13px;margin-right:8px}
+
+.board{display:grid;grid-template-columns:190px 1fr 260px;gap:12px;flex:1;min-height:0}
+
+/* joueurs */
+.playersBox{padding:12px;overflow-y:auto}
+.playersBox h2{font-size:18px;margin-bottom:8px}
+.pl{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;
+  margin-bottom:4px;font-size:14px}
+.pl.me{background:var(--accent-soft)}
+.pl.guessed{background:var(--ok-soft)}
+.pl.turn{background:var(--ok-soft)}
+.pl.dead{opacity:.45;text-decoration:line-through}
+.pl .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-weight:500}
+.pl .sc{font-weight:600;font-family:"IBM Plex Mono",monospace;font-size:13px}
+.pl .gain{color:var(--ok);font-size:12px;font-weight:600}
+.pl .role{font-size:16px}
+.pl .hearts{font-size:11px;letter-spacing:-1px}
+
+/* zone canvas (Griffonne) */
+#canvasWrap{display:flex;flex-direction:column;min-width:0;min-height:0}
+#canvasBox{position:relative;flex:1;min-height:280px}
+#cv{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit;
+  touch-action:none;cursor:crosshair}
+#canvasBox.sticker{overflow:hidden}
+.overlay{
+  position:absolute;inset:0;display:none;flex-direction:column;gap:14px;
+  align-items:center;justify-content:flex-start;text-align:center;
+  background:var(--overlay);padding:20px;border-radius:inherit;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+/* centre le contenu quand il est court, mais laisse défiler quand il déborde */
+.overlay::before,.overlay::after{content:"";margin:auto;flex:none}
+.overlay>*{flex:none;max-width:100%}
+.overlay h2{font-size:28px}
+.overlay .choices{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.overlay .choices .btn{width:auto}
+.swatch{width:30px;height:30px;border-radius:50%;
+  border:1px solid rgba(33,31,28,.3);cursor:pointer;flex:none}
+.swatch.sel{outline:2px solid var(--accent);outline-offset:2px}
+.sizeBtn{font-weight:600;background:var(--surface);color:var(--ink);
+  border:1px solid var(--border);border-radius:8px;
+  cursor:pointer;padding:4px 10px;font-family:"Inter",sans-serif;font-size:13px}
+.sizeBtn.sel{border-color:var(--accent);background:var(--accent-soft)}
+.toolBtn{font-size:17px;line-height:1;background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:5px 9px}
+.toolBtn.sel{border-color:var(--accent);background:var(--accent-soft)}
+.sep{width:1px;height:26px;background:var(--border);margin:0 2px}
+.cfg{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.cfg label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:13px}
+.cfg select{font:inherit;font-weight:500;border:1px solid var(--border);
+  border-radius:8px;padding:6px 8px;background:var(--surface);cursor:pointer}
+#toolbar .btn.small{margin-left:auto;background:var(--bad)}
+#toolbar{display:none;gap:8px;align-items:center;padding:10px 6px 2px;flex-wrap:wrap}
+
+/* boutons de choix de mot par difficulté : chips claires, texte encre */
+.overlay .choices .btn{display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-width:130px;color:var(--ink);border:1px solid var(--border)}
+.overlay .choices .btn:hover{border-color:var(--ink)}
+.diffTag{font-family:"Inter";font-size:11px;font-weight:600;letter-spacing:.5px;
+  padding:1px 8px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface)}
+.btn.choice-1{background:var(--chip1)}
+.btn.choice-2{background:var(--chip2)}
+.btn.choice-3{background:var(--chip3)}
+.btn.choice-4{background:var(--chip4)}
+
+/* chat */
+.chatCol{display:flex;flex-direction:column;min-height:0;position:relative}
+#closeToast{
+  position:absolute;left:50%;bottom:62px;transform:translateX(-50%) scale(.9);
+  background:var(--btn2-bg);color:var(--btn2-fg);border-radius:10px;
+  padding:9px 16px;font-weight:600;font-size:14px;white-space:nowrap;
+  box-shadow:0 8px 22px rgba(33,31,28,.22);opacity:0;pointer-events:none;
+  transition:opacity .15s, transform .15s;z-index:60}
+#closeToast.show{opacity:1;transform:translateX(-50%) scale(1)}
+.chatLog{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:5px}
+.msg{font-size:14px;line-height:1.4;word-break:break-word}
+.msg b{font-weight:600}
+.msg.system{color:var(--muted);font-weight:500}
+.msg.correct{color:var(--ok);font-weight:600}
+.msg.priv{color:var(--accent);font-style:italic;
+  border-left:2px solid var(--accent);padding-left:6px}
+.kickBtn{background:none;border:0;cursor:pointer;font-size:13px;
+  line-height:1;opacity:.55;padding:0 2px;transition:opacity .12s}
+.kickBtn:hover{opacity:1}
+.chatForm{display:flex;gap:8px;padding:10px}
+.chatForm input{flex:1;font:inherit;padding:9px 12px;border:1px solid var(--border);
+  border-radius:10px;min-width:0;background:var(--surface)}
+.chatForm input:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+.chatForm .btn.small{background:var(--btn2-bg);color:var(--btn2-fg)}
+.chatForm .btn.small:hover{background:var(--btn2-hover)}
+.feedTitle{padding:12px 12px 8px;font-size:16px;color:var(--ink);
+  border-bottom:1px solid var(--border)}
+
+/* ================= Enchaîne ! ================= */
+#chainWrap{display:flex;flex-direction:column;min-width:0;min-height:0;gap:10px}
+#chainBox{position:relative;flex:1;min-height:280px;display:flex;flex-direction:column;
+  overflow:hidden}
+#chainLog{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-wrap:wrap;
+  gap:10px 18px;align-content:flex-start}
+.cword{
+  display:inline-flex;align-items:baseline;gap:5px;
+  font-family:"Source Serif 4",Georgia,serif;font-size:19px;
+  animation:pop .18s}
+@keyframes pop{from{transform:scale(.7);opacity:0}}
+.cword .w{letter-spacing:.2px}
+.cword .w b{color:var(--accent-dark);font-weight:600}  /* lettres imposées */
+.cword .pts{font-size:11px;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace}
+#turnBanner{
+  text-align:center;font-family:"Source Serif 4",Georgia,serif;font-weight:600;
+  font-size:20px;padding:6px 10px;color:var(--ink)}
+#turnBanner b{color:var(--accent-dark)}
+#wordForm{display:none;gap:8px;padding:0 12px 12px}
+/* rappel du début imposé à côté du champ : reste visible clavier ouvert */
+.prefixChip{display:flex;align-items:center;flex:none;
+  font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:18px;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent-dark);background:var(--accent-soft);
+  border:1px solid var(--accent);border-radius:10px;padding:0 12px}
+.prefixChip:empty{display:none}
+#wordForm input{flex:1;font:inherit;font-weight:500;font-size:17px;
+  padding:10px 14px;border:1px solid var(--border);border-radius:10px;min-width:0;
+  background:var(--surface);text-transform:lowercase}
+#wordForm input:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+#wordForm .btn.small{font-size:16px}
+#wordErr{
+  position:absolute;left:50%;bottom:70px;transform:translateX(-50%) scale(.9);
+  background:var(--bad);color:#fff;
+  border-radius:10px;padding:9px 16px;font-weight:600;font-size:14px;
+  white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 8px 22px rgba(33,31,28,.22);opacity:0;pointer-events:none;
+  transition:opacity .15s, transform .15s;z-index:60}
+#wordErr.show{opacity:1;transform:translateX(-50%) scale(1)}
+#lvlTag{background:var(--accent-soft);color:var(--accent-dark);
+  padding:3px 12px;border-radius:8px;font-weight:600;font-size:12px}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+
+/* ================= Longueur d'onde ! ================= */
+#waveWrap{display:flex;flex-direction:column;min-width:0;min-height:0}
+#waveBox{position:relative;flex:1;min-height:280px;display:flex;
+  flex-direction:column;align-items:center;gap:8px;padding:14px 14px 10px;
+  overflow-y:auto;overscroll-behavior:contain}
+#wTheme{font-size:13px;color:var(--muted);font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;text-align:center}
+#wTheme:empty{display:none}
+#wClue{font-family:"Source Serif 4",Georgia,serif;font-weight:600;
+  font-size:27px;line-height:1.15;text-align:center;color:var(--ink);
+  max-width:100%;word-break:break-word}
+#wClue:empty{display:none}
+#dialWrap{width:100%;max-width:520px;flex:none}
+#dial{width:100%;height:auto;display:block;touch-action:none;
+  border-radius:8px}
+#dial.live{cursor:pointer}
+#dial:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+#dial .disc{fill:var(--bg);stroke:none}
+#dial .rim{fill:none;stroke:var(--border);stroke-width:1.5}
+#dial .band{stroke:none}
+#dial .b1{fill:var(--accent);opacity:.15}
+#dial .b3{fill:var(--accent);opacity:.42}
+#dial .b5{fill:var(--accent);opacity:.92}
+#dial .tick{stroke:var(--border);stroke-width:2;stroke-linecap:round}
+#dial .hub{fill:var(--ink)}
+#dial .nd{stroke:var(--muted);stroke-width:3;stroke-linecap:round}
+#dial .nd.knob{fill:var(--muted);stroke:none}
+#dial .nd.mine{stroke:var(--ink);stroke-width:5}
+#dial .nd.mine.knob{fill:var(--ink)}
+#dial .nd.target{stroke:var(--accent-dark);stroke-width:5;
+  stroke-dasharray:9 6}
+#dial .nd.target.knob{fill:var(--accent-dark)}
+/* dévoilement : une couleur par joueur + une pastille avec son avatar,
+   pour savoir d'un coup d'oeil quelle aiguille est à qui. La couleur est
+   posée en style inline : une règle CSS l'emporterait sur l'attribut. */
+#dial .nd.joueur{stroke-width:3.5}
+#dial .nd.moi{stroke-width:5.5}
+#dial .lblring{fill:var(--surface);stroke-width:2.5}
+#dial .lbltxt{font-size:15px;text-anchor:middle;dominant-baseline:central}
+#wPoles{display:flex;justify-content:space-between;gap:10px;width:100%;
+  max-width:520px;font-weight:600;font-size:14.5px;margin-top:-4px}
+#wPoles span{max-width:46%;line-height:1.25}
+#wPoles .r{text-align:right}
+#wPoles .l::before{content:"◀ "; color:var(--muted)}
+#wPoles .r::after{content:" ▶"; color:var(--muted)}
+#wPoles span:empty::before,#wPoles span:empty::after{content:""}
+#wAction{display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  justify-content:center;width:100%;max-width:520px}
+#wAction .btn{width:auto}
+#wStatus{font-size:14px;color:var(--muted);text-align:center;min-height:19px}
+#wStatus b{color:var(--ink)}
+#wResult{display:flex;flex-wrap:wrap;gap:5px 10px;justify-content:center}
+.wres{font-size:13.5px;font-weight:500;padding:3px 10px;border-radius:20px;
+  border:1.5px solid var(--border);background:var(--surface);white-space:nowrap}
+.wres.ok{background:var(--accent-soft)}
+.wres.maitre{border-style:dashed;border-color:var(--accent-dark)}
+.wres.vide{color:var(--muted);font-style:italic}
+/* la pastille reprend la couleur de l'aiguille du joueur */
+.wres .pin{display:inline-block;width:9px;height:9px;border-radius:50%;
+  margin-right:6px;vertical-align:0}
+.wres b{font-family:"IBM Plex Mono",monospace}
+.wform{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%}
+.wform input{flex:1 1 150px;min-width:0;font:inherit;font-weight:500;
+  padding:9px 12px;border:1px solid var(--border);border-radius:10px;
+  background:var(--surface);color:var(--ink)}
+.wform input:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-soft)}
+.wform .btn.small{flex:none}
+#wErr{
+  position:absolute;left:50%;bottom:16px;transform:translateX(-50%) scale(.9);
+  background:var(--bad);color:#fff;border-radius:10px;padding:9px 16px;
+  font-weight:600;font-size:14px;max-width:92%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+  box-shadow:0 8px 22px rgba(33,31,28,.22);opacity:0;pointer-events:none;
+  transition:opacity .15s, transform .15s;z-index:60}
+#wErr.show{opacity:1;transform:translateX(-50%) scale(1)}
+
+
+/* ================= Glouton ! (arène) ================= */
+#arena{position:relative;flex:1;min-height:0;overflow:hidden;border-radius:14px}
+#acv{position:absolute;inset:0;width:100%;height:100%;display:block;
+  touch-action:none;cursor:crosshair;background:var(--bg)}
+/* panneaux posés sur le canvas : discrets, jamais dans le chemin */
+#aLead{position:absolute;top:10px;right:10px;min-width:158px;max-width:210px;
+  padding:8px 10px;font-size:12.5px;opacity:.94;pointer-events:none}
+#aLead h3{font-family:"Source Serif 4",Georgia,serif;font-size:13px;
+  font-weight:600;margin-bottom:5px;color:var(--muted);letter-spacing:.04em;
+  text-transform:uppercase}
+#aLead ol{list-style:none;counter-reset:r}
+#aLead li{counter-increment:r;display:flex;gap:6px;line-height:1.55;
+  white-space:nowrap;overflow:hidden}
+#aLead li::before{content:counter(r) ".";color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;min-width:15px}
+#aLead li .n{flex:1;overflow:hidden;text-overflow:ellipsis}
+#aLead li .m{font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  color:var(--muted)}
+#aLead li.moi{font-weight:700;color:var(--accent-dark)}
+#aLead li.moi .m{color:var(--accent-dark)}
+#aFeed{position:absolute;left:10px;bottom:10px;font-size:12.5px;
+  color:var(--muted);pointer-events:none;display:flex;
+  flex-direction:column;gap:2px;max-width:46%}
+#aFeed div{animation:fadein .2s}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}}
+#aHelp{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);
+  font-size:12.5px;color:var(--muted);pointer-events:none;white-space:nowrap}
+#aHelp b{color:var(--ink);font-family:"IBM Plex Mono",monospace;
+  font-weight:600}
+#aTouch{position:absolute;right:12px;bottom:12px;display:none;gap:8px}
+#aTouch button{font:600 13px "Inter",sans-serif;color:var(--btn2-fg);
+  background:var(--btn2-bg);border:0;border-radius:12px;padding:12px 14px;
+  opacity:.88;cursor:pointer}
+#aTouch button:active{transform:translateY(1px);opacity:1}
+#aScore{font-family:"IBM Plex Mono",monospace;font-weight:600;
+  font-size:15px;color:var(--ink);white-space:nowrap;flex:none}
+#aScore span{color:var(--muted);font-weight:500;font-size:12.5px}
+/* --- PC : en partie, la page ne dépasse jamais l'écran ---
+   (hors partie, on laisse défiler normalement) */
+@media (min-width:901px){
+  body.ingame{height:100dvh;overflow:hidden}
+  .screen{min-height:0;overflow:hidden}
+}
+/* ================= mobile : tout tient dans l'écran, sans scroll ============
+   header compact → bandeau de joueurs horizontal → grande zone de jeu
+   → chat en bas. Le clavier réduit 100dvh, la mise en page suit.          */
+@media (max-width:900px){
+  /* en partie seulement : la page est gelée sur la hauteur réellement
+     visible (--vvh tient compte du clavier). Hors partie, scroll normal.
+     min-height:0 obligatoire : le min-height:100dvh de body gagnerait
+     sinon sur height quand le clavier réduit --vvh (100dvh ignore le
+     clavier sur iOS → champ de saisie caché derrière). */
+  body.ingame{height:var(--vvh,100dvh);min-height:0;overflow:hidden}
+  #home{padding:20px 0}
+  #home h1{font-size:40px}
+  .gamecards{grid-template-columns:1fr}
+
+  .screen{min-height:0;overflow:hidden;padding:8px;gap:6px}
+  .topbar{padding:2px 2px;gap:8px}
+  .topbar .logo{font-size:19px}
+  .roomTag{padding:1px 9px;font-size:13px}
+  .subTag{font-size:11px}
+  .topGear{font-size:13px;padding:3px 8px}
+  .timer{font-size:20px;min-width:36px}
+  #lvlTag{font-size:11px;padding:1px 8px}
+
+  .wordbar{min-height:30px;gap:4px}
+  .tile{font-size:17px;min-width:15px;border-bottom-width:2px;padding-bottom:3px}
+  .wordLabel{font-size:12px;margin-right:5px;width:100%;text-align:center}
+
+  .board{display:flex;flex-direction:column;gap:6px;min-height:0;flex:1}
+
+  /* joueurs : bandeau horizontal de petites cartes */
+  .playersBox{flex:none;max-height:none;padding:6px;
+    overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  .playersBox::-webkit-scrollbar{display:none}
+  .playersBox h2{display:none}
+  #plist,#cplist,#wplist{display:flex;gap:6px;width:max-content}
+  .pl{flex:none;flex-direction:column;align-items:center;gap:0;
+    padding:3px 8px;margin:0;border:1px solid var(--border);
+    border-radius:10px;background:var(--surface);min-width:62px}
+  .pl .role{font-size:13px;line-height:1.1}
+  .pl .nm{max-width:74px;font-size:11px;text-align:center;line-height:1.2}
+  .pl .sc{font-size:12px;line-height:1.2}
+  .pl .gain{font-size:10px;line-height:1.1}
+  .pl .hearts{font-size:9px}
+
+  /* zone de jeu : le canvas / la chaîne prend le gros de l'écran,
+     le chat garde une bande utilisable en bas */
+  #canvasWrap,#chainWrap{flex:4;min-height:0}
+  #canvasBox,#chainBox{min-height:0}
+  .chatCol{flex:1;min-height:96px}
+  /* quand JE dessine : priorité au canvas + à la barre d'outils */
+  #game.meDraw .chatCol{flex:1;min-height:78px}
+  /* quand on tape une réponse (clavier ouvert) : bandeau joueurs et fil de
+     chat se replient pour laisser le dessin visible (cf. .typing en JS) */
+  #game.typing .playersBox{display:none}
+  #game.typing .chatCol,#game .chatCol:focus-within{flex:0 0 auto;min-height:0}
+  #game.typing .chatLog,#game .chatCol:focus-within .chatLog{display:none}
+  .msg{font-size:13px}
+  .chatLog{padding:8px 10px;gap:4px}
+  .chatForm{padding:6px}
+  .chatForm input{padding:7px 10px;font-size:16px} /* 16px : pas de zoom iOS */
+  #closeToast{bottom:50px;font-size:13px;padding:7px 12px}
+
+  /* barre d'outils du dessinateur, compacte */
+  #toolbar{gap:5px;padding:6px 0 0}
+  .swatch{width:22px;height:22px}
+  .swatch.sel{outline-width:2px;outline-offset:1px}
+  .toolBtn{font-size:15px;padding:4px 6px}
+  .sizeBtn{padding:3px 7px;font-size:12px}
+  .sep{height:18px}
+
+  .overlay{gap:10px;padding:14px 12px}
+  .overlay h2{font-size:22px}
+  .cfg{gap:8px}
+  .cfg label{font-size:12px}
+  .cfg select{padding:4px 6px}
+
+  /* Enchaîne : pendant la frappe (clavier ouvert), le journal et le
+     bandeau joueurs se replient — le champ garde une taille normale */
+  #cgame.typing .playersBox,#cgame.typing .chatCol{display:none}
+  #turnBanner{font-size:17px;padding:3px 8px}
+  #wordForm{padding:0 8px 8px}
+  #wordForm input{font-size:16px;padding:8px 12px}
+  .prefixChip{font-size:16px;letter-spacing:1.5px;padding:0 9px}
+  #wordErr{bottom:58px;font-size:13px}
+  .cword{font-size:16px}
+  #chainLog{padding:10px 12px;gap:6px 12px}
+
+  /* Longueur d'onde : le cadran garde la vedette, formulaires compacts */
+  #wgame.typing .playersBox,#wgame.typing .chatCol{display:none}
+  #waveBox{padding:8px 8px 6px;gap:6px}
+  #wClue{font-size:21px}
+  #wTheme{font-size:11.5px}
+  #wPoles{font-size:13px}
+  #dialWrap{max-width:none}
+  #wStatus{font-size:13px}
+  .wres{font-size:12.5px;padding:2px 8px}
+  .wform input{padding:8px 10px;font-size:16px} /* 16px : pas de zoom iOS */
+
+  /* Glouton : les doigts remplacent la souris */
+  #aTouch{display:flex}
+  #aHelp{display:none}
+  #aLead{min-width:0;max-width:44%;font-size:11.5px;padding:6px 8px;
+    top:6px;right:6px}
+  #aFeed{font-size:11px;bottom:6px;left:6px;max-width:50%}
+  #aScore{font-size:13px}
+  #aPop{display:none}
+  #aLead li:nth-child(n+6){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ RÉGLAGES ============ -->
+<button id="settingsBtn" title="Réglages" aria-label="Réglages">⚙</button>
+<div id="settingsModal">
+  <div class="panel">
+    <div class="panelHead">
+      <h2>Réglages</h2>
+      <button id="settingsClose" aria-label="Fermer">✕</button>
+    </div>
+
+    <h3>Thème</h3>
+    <div class="themes">
+      <button class="themeOpt" data-theme="clair">
+        <span class="dots"><i style="background:#faf9f5"></i><i style="background:#d97757"></i><i style="background:#211f1c"></i></span>
+        Clair</button>
+      <button class="themeOpt" data-theme="sombre">
+        <span class="dots"><i style="background:#161512"></i><i style="background:#d97757"></i><i style="background:#eae6dd"></i></span>
+        Sombre</button>
+      <button class="themeOpt" data-theme="ocean">
+        <span class="dots"><i style="background:#f2f6f8"></i><i style="background:#2f7fa6"></i><i style="background:#1a2530"></i></span>
+        Océan</button>
+      <button class="themeOpt" data-theme="foret">
+        <span class="dots"><i style="background:#f4f6f0"></i><i style="background:#4f7a45"></i><i style="background:#21261c"></i></span>
+        Forêt</button>
+      <button class="themeOpt" data-theme="sorbet">
+        <span class="dots"><i style="background:#fdf4f2"></i><i style="background:#d6537a"></i><i style="background:#2b2024"></i></span>
+        Sorbet</button>
+    </div>
+
+    <div id="profileSec" style="display:none">
+      <h3>Profil</h3>
+      <div class="avatars" id="avatarGrid"></div>
+      <p class="statline" id="statDraw"></p>
+      <p class="statline" id="statChain"></p>
+      <p class="statline" id="statWave"></p>
+      <p class="statline" id="statAgar"></p>
+    </div>
+
+    <h3>Compte</h3>
+    <div id="accOut">
+      <input id="accUser" maxlength="16" placeholder="Pseudo"
+             autocomplete="username">
+      <input id="accPass" type="password" maxlength="72"
+             placeholder="Mot de passe" autocomplete="current-password">
+      <div class="row">
+        <button class="btn" id="accRegister">Créer un compte</button>
+        <button class="btn alt" id="accLogin">Se connecter</button>
+      </div>
+      <p class="foot">Ton compte retient ton pseudo et ton thème, et te
+      reconnecte automatiquement sur cet appareil.</p>
+    </div>
+    <div id="accIn" style="display:none">
+      <p>Connecté : <b id="accName"></b></p>
+      <button class="btn alt" id="accLogout" style="width:auto">Se déconnecter</button>
+    </div>
+    <div id="accMsg"></div>
+
+    <h3>Mode admin</h3>
+    <div id="admOut">
+      <input id="admCode" type="password" maxlength="40"
+             placeholder="Code admin" autocomplete="off">
+      <button class="btn" id="admOn">Activer</button>
+    </div>
+    <div id="admIn" style="display:none">
+      <p>Mode admin <b>actif</b>.</p>
+      <button class="btn alt" id="admOff" style="width:auto">Désactiver</button>
+    </div>
+    <div id="admMsg"></div>
+  </div>
+</div>
+
+<!-- ============ HUB D'ACCUEIL ============ -->
+<div id="home">
+  <h1>poblox<span>.</span></h1>
+  <p>Un pseudo, un code à partager, c'est parti.</p>
+  <div class="namerow">
+    <input id="nameInput" maxlength="16" placeholder="Ton pseudo">
+    <button id="avatarBtn" type="button" title="Choisir un avatar"
+            aria-label="Choisir un avatar" aria-expanded="false">🙂</button>
+  </div>
+  <div class="avatars" id="homeAvatars" style="display:none"></div>
+  <div class="gamecards">
+    <button class="gamecard draw" id="createDraw">
+      <div class="ico" aria-hidden="true">
+        <svg width="72" height="24" viewBox="0 0 72 24" fill="none">
+          <path d="M3 18 C 10 5, 17 5, 23 12 S 36 21, 44 12 S 59 3, 64 10"
+                stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="68" cy="9" r="2.5" fill="var(--accent)"/>
+        </svg>
+      </div>
+      <div class="ttl">Griffonne</div>
+      <div class="sub">Dessine, les autres devinent dans le chat. Chacun passe au crayon.</div>
+    </button>
+    <button class="gamecard chain" id="createChain">
+      <div class="ico" aria-hidden="true">
+        <span class="lt">s</span><span class="lt">i</span><span class="lt">g</span><span class="lt">e</span><span class="lt">o</span><span class="lt">n</span>
+        <span class="gapx"></span>
+        <span class="lt hot">p</span><span class="lt">_</span><span class="lt">_</span>
+      </div>
+      <div class="ttl">Enchaîne</div>
+      <div class="sub">Un début de mot tiré au sort, un vrai mot du dictionnaire, un chrono.</div>
+    </button>
+    <button class="gamecard wave" id="createWave">
+      <div class="ico" aria-hidden="true">
+        <svg width="72" height="24" viewBox="0 0 72 26" fill="none">
+          <path d="M6 24 A 30 30 0 0 1 66 24 Z" fill="var(--border)" opacity=".5"/>
+          <path d="M36 24 L 43.5 4.7 A 30 30 0 0 1 49.6 8.2 Z" fill="var(--accent)"/>
+          <path d="M36 24 L 20 0.5" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="36" cy="24" r="3.5" fill="var(--ink)"/>
+        </svg>
+      </div>
+      <div class="ttl">Longueur d'onde</div>
+      <div class="sub">Une cible cachée sur un axe, un seul indice&nbsp;: à quel point&nbsp;?</div>
+    </button>
+    <button class="gamecard agar" id="createAgar">
+      <div class="ico" aria-hidden="true">
+        <svg width="72" height="24" viewBox="0 0 72 26" fill="none">
+          <circle cx="20" cy="13" r="11" fill="var(--accent)"/>
+          <circle cx="42" cy="9" r="5" fill="var(--ink)" opacity=".55"/>
+          <circle cx="55" cy="18" r="3.5" fill="var(--ink)" opacity=".35"/>
+          <circle cx="64" cy="7" r="2.5" fill="var(--ink)" opacity=".25"/>
+        </svg>
+      </div>
+      <div class="ttl">Glouton</div>
+      <div class="sub">Une arène, tout le monde en même temps&nbsp;: mange les
+        plus petits, fuis les plus gros. Sans salon, ça démarre tout de suite.</div>
+    </button>
+  </div>
+  <div class="orjoin">code du salon</div>
+  <input id="codeInput" maxlength="4" placeholder="CODE"
+         style="text-transform:uppercase" autocapitalize="characters"
+         autocomplete="off" spellcheck="false">
+  <div class="row">
+    <button class="btn" id="createBtn">Créer un salon</button>
+    <button class="btn alt" id="joinBtn">Rejoindre</button>
+  </div>
+  <p class="foot" id="homeFoot">Choisis un jeu ci-dessus puis « Créer un
+  salon », ou entre le code de tes amis et « Rejoindre ».</p>
+  <div id="homeErr"></div>
+</div>
+
+<!-- ============ GRIFFONNE ============ -->
+<div id="game" class="screen">
+  <div class="topbar">
+    <div class="logo hand" title="Retour à l'accueil" onclick="leave()">Griffonne<span>.</span></div>
+    <div id="roomTag" class="roomTag" title="Cliquer pour copier">····</div>
+    <div id="roundTag" class="subTag"></div>
+    <button class="topGear" type="button" title="Réglages"
+            aria-label="Réglages" onclick="openSettings()">⚙</button>
+    <div id="timer" class="timer"></div>
+  </div>
+
+  <div id="wordbar" class="wordbar"></div>
+
+  <div class="board">
+    <div class="playersBox sticker"><h2>Artistes</h2><div id="plist"></div></div>
+
+    <div id="canvasWrap">
+      <div id="canvasBox" class="sticker">
+        <canvas id="cv"></canvas>
+        <div id="overlay" class="overlay"></div>
+      </div>
+      <div id="toolbar"></div>
+    </div>
+
+    <div class="chatCol sticker">
+      <div id="chat" class="chatLog"></div>
+      <div id="closeToast">🔥 Presque ! Tu chauffes…</div>
+      <form id="chatForm" class="chatForm">
+        <input id="chatInput" maxlength="80" placeholder="Devine ici…" autocomplete="off">
+        <button class="btn small" type="submit">➤</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ENCHAÎNE ============ -->
+<div id="cgame" class="screen">
+  <div class="topbar">
+    <div class="logo hand" title="Retour à l'accueil" onclick="leave()">Enchaîne<span>.</span></div>
+    <div id="cRoomTag" class="roomTag" title="Cliquer pour copier">····</div>
+    <div id="lvlTag" style="display:none"></div>
+    <div id="cCount" class="subTag"></div>
+    <button class="topGear" type="button" title="Réglages"
+            aria-label="Réglages" onclick="openSettings()">⚙</button>
+    <div id="cTimer" class="timer"></div>
+  </div>
+
+  <div id="cWordbar" class="wordbar"></div>
+
+  <div class="board">
+    <div class="playersBox sticker"><h2>Joueurs</h2><div id="cplist"></div></div>
+
+    <div id="chainWrap">
+      <div id="chainBox" class="sticker">
+        <div id="chainLog"></div>
+        <div id="turnBanner"></div>
+        <form id="wordForm">
+          <span id="wordPrefix" class="prefixChip"></span>
+          <input id="wordInput" maxlength="30" placeholder="Ton mot…"
+                 autocomplete="off" autocapitalize="none" spellcheck="false">
+          <button class="btn small" type="submit">➤</button>
+        </form>
+        <div id="wordErr"></div>
+        <div id="cOverlay" class="overlay"></div>
+      </div>
+    </div>
+
+    <div class="chatCol sticker">
+      <div class="feedTitle hand">Journal</div>
+      <div id="cfeed" class="chatLog"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LONGUEUR D'ONDE ============ -->
+<div id="wgame" class="screen">
+  <div class="topbar">
+    <div class="logo hand" title="Retour à l'accueil" onclick="leave()">Longueur d'onde<span>.</span></div>
+    <div id="wRoomTag" class="roomTag" title="Cliquer pour copier">····</div>
+    <div id="wRoundTag" class="subTag"></div>
+    <button class="topGear" type="button" title="Réglages"
+            aria-label="Réglages" onclick="openSettings()">⚙</button>
+    <div id="wTimer" class="timer"></div>
+  </div>
+
+  <div class="board">
+    <div class="playersBox sticker"><h2>Joueurs</h2><div id="wplist"></div></div>
+
+    <div id="waveWrap">
+      <div id="waveBox" class="sticker">
+        <div id="wTheme"></div>
+        <div id="wClue"></div>
+        <div id="dialWrap">
+          <svg id="dial" viewBox="0 0 420 232" tabindex="0"
+               role="img" aria-label="Cadran de placement">
+            <path class="disc" d="M 24 212 A 186 186 0 0 1 396 212 Z"/>
+            <g id="dBands"></g>
+            <path class="rim" d="M 24 212 A 186 186 0 0 1 396 212 Z"/>
+            <g id="dTicks"></g>
+            <g id="dNeedles"></g>
+            <circle class="hub" cx="210" cy="212" r="13"/>
+          </svg>
+        </div>
+        <div id="wPoles"><span class="l" id="wLeft"></span><span class="r" id="wRight"></span></div>
+        <div id="wAction"></div>
+        <div id="wStatus"></div>
+        <div id="wResult"></div>
+        <div id="wErr"></div>
+        <div id="wOverlay" class="overlay"></div>
+      </div>
+    </div>
+
+    <div class="chatCol sticker">
+      <div id="wchat" class="chatLog"></div>
+      <form id="wchatForm" class="chatForm">
+        <input id="wchatInput" maxlength="80" placeholder="Discute ici…" autocomplete="off">
+        <button class="btn small" type="submit">➤</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GLOUTON ============ -->
+<div id="agame" class="screen">
+  <div class="topbar">
+    <div class="logo hand" title="Quitter l'arène" onclick="leave()">Glouton<span>.</span></div>
+    <div id="aScore"></div>
+    <div id="aPop" class="subTag"></div>
+    <button class="topGear" type="button" title="Réglages"
+            aria-label="Réglages" onclick="openSettings()">⚙</button>
+  </div>
+
+  <div id="arena" class="sticker">
+    <canvas id="acv"></canvas>
+    <div id="aLead" class="sticker"><h3>Classement</h3><ol id="aLeadList"></ol></div>
+    <div id="aFeed"></div>
+    <div id="aHelp"><b>Espace</b> se diviser · <b>W</b> cracher de la masse</div>
+    <div id="aTouch">
+      <button id="aBtnEject" type="button">Cracher</button>
+      <button id="aBtnSplit" type="button">Diviser</button>
+    </div>
+    <div id="aDead" class="overlay"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ------------------------------------------------------------- état client
+const $ = id => document.getElementById(id);
+
+// hauteur visible réelle : quand le clavier s'ouvre sur mobile, 100dvh ne
+// bouge pas — visualViewport si. La mise en page suit, le dessin reste visible.
+if(window.visualViewport){
+  const vv = window.visualViewport;
+  const updVV = () => {
+    document.documentElement.style.setProperty("--vvh", vv.height + "px");
+    // en partie seulement : la mise en page est gelée, on recale en haut
+    // (hors partie, on laisse l'utilisateur scroller librement)
+    if(document.body.classList.contains("ingame")) scrollTo(0, 0);
+  };
+  vv.addEventListener("resize", updVV);
+  vv.addEventListener("scroll", updVV);
+  updVV();
+}
+
+// PWA : installe le service worker (l'appli devient installable sur mobile)
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/sw.js").catch(()=>{});
+}
+let ROOM = null, PID = null, GAME = "draw", ME_DRAWER = false, STATE = "lobby";
+let strokeCursor = 0, chatCursor = 0, clearSeen = 0;
+const COLORS = ["#1c1c28","#5f6673","#ffffff","#e63946","#ff8f2b","#ffd166",
+                "#06d6a0","#1b7a3d","#4cc9f0","#2456c4","#9b5de5","#f15bb5",
+                "#8a5a2b","#f7c8a0"];
+let curColor = COLORS[0], curSize = 5;
+
+// ------------------------------------------------------------- hub
+async function api(path, body){
+  const r = await fetch("/api/"+path, body===undefined ? undefined : {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)});
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error || "Erreur réseau");
+  return j;
+}
+function enter(j){
+  ROOM = j.room; PID = j.pid; GAME = j.game || "draw";
+  const nm = $("nameInput").value.trim();
+  sessionStorage.setItem("recre",
+    JSON.stringify({room:ROOM,pid:PID,name:nm,game:GAME}));
+  $("home").style.display = "none";
+  $("settingsBtn").style.display = "none";
+  $("settingsModal").style.display = "none";
+  document.body.classList.add("ingame");
+  if(GAME === "chain"){
+    $("cgame").style.display = "flex";
+    $("cRoomTag").textContent = ROOM;
+    pollChain();
+  }else if(GAME === "wave"){
+    $("wgame").style.display = "flex";
+    $("wRoomTag").textContent = ROOM;
+    pollWave();
+  }else{
+    $("game").style.display = "flex";
+    $("roomTag").textContent = ROOM;
+    fitCanvas(); setTimeout(fitCanvas, 350); poll();
+  }
+}
+function leave(){
+  if(GAME === "agar") agarQuitte();
+  sessionStorage.removeItem("recre");
+  location.href = location.pathname;
+}
+const code4 = () => $("codeInput").value.trim().toUpperCase().slice(0,4);
+const shareLink = () => `${location.origin}${location.pathname}?room=${ROOM}`;
+
+async function joinRoom(){
+  const code = code4();
+  if(code.length < 4){
+    $("homeErr").textContent = "Entre le code à 4 lettres du salon.";
+    $("codeInput").focus(); return;
+  }
+  try{ enter(await api("join",{name:$("nameInput").value, room:code,
+                               avatar:myAvatar})); }
+  catch(e){ $("homeErr").textContent = e.message; }
+}
+// les cartes choisissent le jeu ; « Créer un salon » crée, « Rejoindre » rejoint
+let selGame = "draw";
+const GAME_BTN = {draw:"createDraw", chain:"createChain", wave:"createWave",
+                  agar:"createAgar"};
+function selectGame(g){
+  selGame = g;
+  for(const k in GAME_BTN){
+    $(GAME_BTN[k]).classList.toggle("sel", k === g);
+    $(GAME_BTN[k]).setAttribute("aria-pressed", k === g);
+  }
+  // Glouton n'a pas de salon : on entre dans l'arène commune tout de suite
+  $("createBtn").textContent = g === "agar" ? "🎮 Entrer dans l'arène"
+                                            : "Créer un salon";
+  $("homeFoot").textContent = g === "agar"
+    ? "Glouton se joue sans salon : tu tombes dans l'arène avec tout le monde."
+    : "Choisis un jeu ci-dessus puis « Créer un salon », ou entre le code de tes amis et « Rejoindre ».";
+}
+for(const k in GAME_BTN) $(GAME_BTN[k]).onclick = () => selectGame(k);
+selectGame("draw");
+// avatar du hub : pour tous, compte ou pas (localStorage pour les anonymes)
+let myAvatar = "";
+try{ myAvatar = localStorage.getItem("avatar") || ""; }catch(e){}
+function setHomeAvatar(a){
+  myAvatar = a || "";
+  $("avatarBtn").textContent = myAvatar || "🙂";
+}
+setHomeAvatar(myAvatar);
+$("avatarBtn").onclick = () => {
+  const g = $("homeAvatars");
+  const open = g.style.display === "none";
+  g.style.display = open ? "" : "none";
+  $("avatarBtn").setAttribute("aria-expanded", open);
+  if(open) buildAvatars("homeAvatars", myAvatar, a => {
+    setHomeAvatar(a);
+    try{ localStorage.setItem("avatar", a); }catch(e){}
+    if(ACC) api("avatar",{avatar:a}).catch(()=>{});
+    g.style.display = "none";
+    $("avatarBtn").setAttribute("aria-expanded", "false");
+  });
+};
+async function createRoom(){
+  if(selGame === "agar") return agarDemarrer();
+  try{ enter(await api("create",{name:$("nameInput").value, game:selGame,
+                                 avatar:myAvatar})); }
+  catch(e){ $("homeErr").textContent = e.message; }
+}
+$("createBtn").onclick = createRoom;
+$("joinBtn").onclick = joinRoom;
+// touche Entrée : rejoint si un code est saisi, sinon passe au champ suivant
+["nameInput","codeInput"].forEach(id => $(id).addEventListener("keydown", e => {
+  if(e.key !== "Enter") return;
+  e.preventDefault();
+  if(code4().length >= 4) joinRoom();
+  else if(id === "nameInput") $("codeInput").focus();
+}));
+
+/* ------------------------------------------------------------- réglages */
+const THEMES = ["clair","sombre","ocean","foret","sorbet"];
+let ACC = null;               // pseudo du compte connecté, ou null
+function applyTheme(t, save){
+  if(!THEMES.includes(t)) t = "clair";
+  document.documentElement.dataset.theme = t;
+  try{ localStorage.setItem("theme", t); }catch(e){}
+  document.querySelectorAll(".themeOpt").forEach(b =>
+    b.classList.toggle("sel", b.dataset.theme === t));
+  if(save && ACC) api("theme",{theme:t}).catch(()=>{});
+}
+applyTheme(document.documentElement.dataset.theme || "clair", false);
+document.querySelectorAll(".themeOpt").forEach(b =>
+  b.onclick = () => applyTheme(b.dataset.theme, true));
+
+const settingsModal = $("settingsModal");
+function openSettings(){
+  refreshMe();                       // stats + avatar à jour à l'ouverture
+  settingsModal.style.display = "flex";
+}
+$("settingsBtn").onclick = openSettings;
+$("settingsClose").onclick = () => { settingsModal.style.display = "none"; };
+settingsModal.addEventListener("click", e => {
+  if(e.target === settingsModal) settingsModal.style.display = "none";
+});
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape") settingsModal.style.display = "none";
+});
+
+function setAcc(name){
+  ACC = name || null;
+  $("accOut").style.display = ACC ? "none" : "";
+  $("accIn").style.display = ACC ? "" : "none";
+  $("accName").textContent = ACC || "";
+  $("profileSec").style.display = ACC ? "" : "none";
+  if(ACC && !$("nameInput").value.trim()) $("nameInput").value = ACC;
+}
+
+// ---- profil (avatar + stats), pour les joueurs connectés
+const AVATARS = ["🦊","🐼","🐸","🐙","🦖","🦉","🐝","🐢","🦩","🐬",
+                 "🦔","🐯","🦄","👻","🤖","👽","🧙","🥷","🍄","🌵",
+                 "⚡","🌙","🍕","🎩"];
+function buildAvatars(gridId, cur, onPick){
+  const g = $(gridId); g.innerHTML = "";
+  AVATARS.forEach(a => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "avOpt" + (a === cur ? " sel" : "");
+    b.textContent = a;
+    b.onclick = () => onPick(a);
+    g.appendChild(b);
+  });
+}
+function pickProfileAvatar(a){
+  api("avatar", {avatar: a})
+    .then(() => {
+      buildAvatars("avatarGrid", a, pickProfileAvatar);
+      setHomeAvatar(a);
+      try{ localStorage.setItem("avatar", a); }catch(e){}
+    })
+    .catch(()=>{});
+}
+function fillStats(s){
+  s = s || {};
+  $("statDraw").innerHTML = `🎨 Griffonne — <b>${s.dg_games||0}</b> parties ·
+    <b>${s.dg_wins||0}</b> victoires · <b>${s.dg_guessed||0}</b> mots devinés`;
+  $("statChain").innerHTML = `🔗 Enchaîne — <b>${s.ch_games||0}</b> parties ·
+    <b>${s.ch_wins||0}</b> victoires · <b>${s.ch_words||0}</b> mots enchaînés`;
+  $("statWave").innerHTML = `📡 Longueur d'onde — <b>${s.wv_games||0}</b> parties ·
+    <b>${s.wv_wins||0}</b> victoires · <b>${s.wv_points||0}</b> points`;
+  $("statAgar").innerHTML = `🟢 Glouton — <b>${s.ag_games||0}</b> vies ·
+    record <b>${s.ag_best||0}</b> de masse · <b>${s.ag_eaten||0}</b> gloutons avalés`;
+}
+async function refreshMe(applyThm){
+  try{
+    const j = await api("me");
+    setAcc(j.name);
+    setAdm(j.admin);
+    if(j.name){
+      if(applyThm && j.theme) applyTheme(j.theme, false);
+      buildAvatars("avatarGrid", j.avatar || "", pickProfileAvatar);
+      fillStats(j.stats);
+      if(j.avatar) setHomeAvatar(j.avatar);   // l'avatar du compte prime
+    }
+  }catch(e){}
+}
+function accMsg(t, good){
+  const m = $("accMsg");
+  m.textContent = t || "";
+  m.classList.toggle("good", !!good);
+}
+async function accDo(path){
+  accMsg("");
+  try{
+    const j = await api(path, {username:$("accUser").value.trim(),
+                               password:$("accPass").value});
+    setAcc(j.name);
+    $("nameInput").value = j.name;   // le pseudo du compte devient le pseudo
+    if(path === "login" && j.theme) applyTheme(j.theme, false);
+    else applyTheme(document.documentElement.dataset.theme, true);
+    $("accPass").value = "";
+    accMsg(path === "login" ? "Te revoilà !" : "Compte créé !", true);
+    refreshMe();                     // charge avatar + stats du profil
+  }catch(e){ accMsg(e.message); }
+}
+$("accRegister").onclick = () => accDo("register");
+$("accLogin").onclick = () => accDo("login");
+$("accPass").addEventListener("keydown", e => {
+  if(e.key === "Enter") accDo("login");
+});
+$("accLogout").onclick = async () => {
+  try{ await api("logout", {}); }catch(e){}
+  setAcc(null); accMsg("Déconnecté.", true);
+};
+
+// ---- mode admin (code secret, vérifié côté serveur)
+let IS_ADMIN = false;
+function setAdm(on){
+  IS_ADMIN = !!on;
+  $("admOut").style.display = IS_ADMIN ? "none" : "";
+  $("admIn").style.display = IS_ADMIN ? "" : "none";
+}
+function admMsg(t, good){
+  const m = $("admMsg");
+  m.textContent = t || "";
+  m.classList.toggle("good", !!good);
+}
+$("admOn").onclick = async () => {
+  admMsg("");
+  try{
+    await api("admin_activate", {code:$("admCode").value});
+    $("admCode").value = "";
+    setAdm(true); admMsg("Mode admin activé.", true);
+  }catch(e){ admMsg(e.message); }
+};
+$("admCode").addEventListener("keydown", e => {
+  if(e.key === "Enter"){ e.preventDefault(); $("admOn").click(); }
+});
+$("admOff").onclick = async () => {
+  try{ await api("admin_deactivate", {}); }catch(e){}
+  setAdm(false); admMsg("Mode admin désactivé.", true);
+};
+// déjà connecté ? (cookie de session) — applique aussi le thème du compte
+refreshMe(true);
+// exclu d'un salon au chargement précédent ? on l'explique sur l'accueil
+try{
+  if(sessionStorage.getItem("kickmsg")){
+    sessionStorage.removeItem("kickmsg");
+    $("homeErr").textContent =
+      "Tu as été exclu(e) du salon par un modérateur.";
+  }
+}catch(e){}
+// lien direct partagé (…/?room=ABCD) : pré-remplit le code
+try{
+  const qr = new URLSearchParams(location.search).get("room");
+  if(qr && !sessionStorage.getItem("recre")){
+    $("codeInput").value = qr.toUpperCase().slice(0,4);
+    $("nameInput").focus();
+  }
+}catch(e){}
+const copyLink = () => navigator.clipboard?.writeText(shareLink());
+$("roomTag").onclick = copyLink;
+$("cRoomTag").onclick = copyLink;
+$("wRoomTag").onclick = copyLink;
+// reconnexion après un simple rechargement de page
+try{
+  const s = JSON.parse(sessionStorage.getItem("recre")||"null");
+  if(s && (s.room || s.game === "agar")){ ROOM=s.room; PID=s.pid; GAME=s.game||"draw";
+    $("home").style.display="none";
+    $("settingsBtn").style.display="none";
+    document.body.classList.add("ingame");
+    if(GAME==="agar"){
+      // les const de la section Glouton ne sont pas encore évaluées ici
+      requestAnimationFrame(() => agarJoin(s.name).then(agarEcran)
+        .catch(() => { sessionStorage.removeItem("recre"); location.reload(); }));
+    }else if(GAME==="chain"){
+      $("cgame").style.display="flex"; $("cRoomTag").textContent=ROOM;
+      requestAnimationFrame(pollChain);
+    }else if(GAME==="wave"){
+      $("wgame").style.display="flex"; $("wRoomTag").textContent=ROOM;
+      requestAnimationFrame(pollWave);
+    }else{
+      $("game").style.display="flex"; $("roomTag").textContent=ROOM;
+      requestAnimationFrame(()=>{fitCanvas();poll();});
+    }
+  }
+}catch(e){}
+
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+// jeton perdu / salon disparu : on retente de rejoindre, sinon retour au hub
+async function rejoinOr(reset){
+  const s = JSON.parse(sessionStorage.getItem("recre")||"null");
+  if(s && s.name && !rejoinOr._busy){
+    rejoinOr._busy = true;
+    try{
+      const j = await api("join",{name:s.name, room:ROOM, avatar:myAvatar});
+      PID = j.pid; rejoinOr._busy = false;
+      sessionStorage.setItem("recre",
+        JSON.stringify({room:ROOM,pid:PID,name:s.name,game:GAME}));
+      return true;
+    }catch(e){ rejoinOr._busy = false; }
+  }
+  sessionStorage.removeItem("recre"); location.reload();
+  return false;
+}
+
+/* ═══════════════════════════════════════════════ GRIFFONNE */
+const cv = $("cv"), ctx = cv.getContext("2d");
+const PAPER = "#fdfbf4";
+let drawing=false, lastPt=null, anchor=null, pendingPts=[], outbox=[];
+let curTool="pen", curGid=null, snap=null, needFull=false;
+
+/* Zone de dessin à ratio FIXE (4:3), centrée dans le canvas : le dessin
+   garde ses proportions sur tous les écrans et quand le clavier s'ouvre,
+   et tous les joueurs voient exactement la même chose. */
+const ASPECT = 4/3;
+let CRECT = {x:0, y:0, w:1, h:1};
+function computeRect(box){
+  let w = box.width, h = w / ASPECT;
+  if(h > box.height){ h = box.height; w = h * ASPECT; }
+  CRECT = {x:(box.width - w) / 2, y:(box.height - h) / 2, w:w, h:h};
+}
+
+function fitCanvas(){
+  const box = cv.getBoundingClientRect();
+  if(box.width < 10) return;
+  const newW = Math.round(box.width * devicePixelRatio);
+  const newH = Math.round(box.height * devicePixelRatio);
+  if(cv.width === newW && cv.height === newH) return;
+  cv.width = newW;
+  cv.height = newH;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  ctx.lineCap = ctx.lineJoin = "round";
+  computeRect(box);
+  clearCanvas();          // repeint le fond papier de la zone de dessin
+  strokeCursor = 0;
+  needFull = true;
+  poll(true);
+}
+addEventListener("resize", () => { if(GAME==="draw") fitCanvas(); });
+let fitRAF = null;
+new ResizeObserver(() => {
+  if(GAME!=="draw" || !ROOM) return;
+  if(fitRAF) cancelAnimationFrame(fitRAF);
+  fitRAF = requestAnimationFrame(fitCanvas);
+}).observe(cv);
+
+function pos(e){
+  const r = cv.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return [ Math.min(1,Math.max(0,(t.clientX-r.left-CRECT.x)/CRECT.w)),
+           Math.min(1,Math.max(0,(t.clientY-r.top-CRECT.y)/CRECT.h)) ];
+}
+
+function drawStrokeObj(s){
+  if(s.tool==="fill"){ floodFill(s.pts[0][0], s.pts[0][1], s.color); return; }
+  const X=p=>CRECT.x+p[0]*CRECT.w, Y=p=>CRECT.y+p[1]*CRECT.h;
+  const a=s.pts[0], b=s.pts[s.pts.length-1];
+  ctx.strokeStyle = s.tool==="eraser" ? PAPER : s.color;
+  ctx.lineWidth = s.size;
+  ctx.beginPath();
+  if(s.tool==="line"){ ctx.moveTo(X(a),Y(a)); ctx.lineTo(X(b),Y(b)); ctx.stroke(); }
+  else if(s.tool==="rect"){
+    ctx.strokeRect(Math.min(X(a),X(b)), Math.min(Y(a),Y(b)),
+                   Math.abs(X(b)-X(a))||1, Math.abs(Y(b)-Y(a))||1);
+  }
+  else if(s.tool==="circle"){
+    ctx.ellipse((X(a)+X(b))/2, (Y(a)+Y(b))/2,
+                Math.abs(X(b)-X(a))/2||1, Math.abs(Y(b)-Y(a))/2||1,
+                0, 0, Math.PI*2);
+    ctx.stroke();
+  }
+  else{ // pen / eraser
+    ctx.moveTo(X(a),Y(a));
+    if(s.pts.length===1) ctx.lineTo(X(a)+.01,Y(a));
+    for(let i=1;i<s.pts.length;i++) ctx.lineTo(X(s.pts[i]),Y(s.pts[i]));
+    ctx.stroke();
+  }
+}
+
+function floodFill(nx, ny, hex){
+  // le remplissage reste confiné à la zone de dessin (ratio fixe)
+  const dpr=devicePixelRatio;
+  const rx=Math.max(0,Math.round(CRECT.x*dpr)), ry=Math.max(0,Math.round(CRECT.y*dpr));
+  const rw=Math.max(1,Math.min(cv.width-rx,Math.round(CRECT.w*dpr)));
+  const rh=Math.max(1,Math.min(cv.height-ry,Math.round(CRECT.h*dpr)));
+  const w=cv.width, h=cv.height;
+  const x0=Math.min(rx+rw-1,Math.max(rx,Math.round(rx+nx*rw)));
+  const y0=Math.min(ry+rh-1,Math.max(ry,Math.round(ry+ny*rh)));
+  const img=ctx.getImageData(0,0,w,h), d=img.data;
+  const i0=(y0*w+x0)*4;
+  const tr=d[i0],tg=d[i0+1],tb=d[i0+2],ta=d[i0+3];
+  const nr=parseInt(hex.slice(1,3),16),ng=parseInt(hex.slice(3,5),16),nb=parseInt(hex.slice(5,7),16);
+  if(ta===255 && Math.abs(tr-nr)+Math.abs(tg-ng)+Math.abs(tb-nb)<12) return;
+  const TOL=64, seen=new Uint8Array(w*h), stack=[x0,y0];
+  const ok=i=>{const j=i*4;
+    return Math.abs(d[j]-tr)+Math.abs(d[j+1]-tg)+Math.abs(d[j+2]-tb)+Math.abs(d[j+3]-ta)<=TOL;};
+  while(stack.length){
+    const y=stack.pop(), x=stack.pop(), i=y*w+x;
+    if(seen[i] || !ok(i)) continue;
+    seen[i]=1; const j=i*4;
+    d[j]=nr; d[j+1]=ng; d[j+2]=nb; d[j+3]=255;
+    if(x>rx)stack.push(x-1,y); if(x<rx+rw-1)stack.push(x+1,y);
+    if(y>ry)stack.push(x,y-1); if(y<ry+rh-1)stack.push(x,y+1);
+  }
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0);
+  ctx.putImageData(img,0,0); ctx.restore();
+}
+
+function restoreSnap(){
+  if(!snap) return;
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.drawImage(snap,0,0); ctx.restore();
+}
+
+function startDraw(e){
+  if(!ME_DRAWER || STATE!=="drawing") return;
+  e.preventDefault();
+  const p = pos(e);
+  curGid = Math.random().toString(36).slice(2,10);
+  if(curTool==="fill"){
+    floodFill(p[0], p[1], curColor);
+    outbox.push({tool:"fill", gid:curGid, color:curColor, size:1, pts:[p]});
+    return;
+  }
+  drawing = true; lastPt = p; anchor = p; pendingPts = [p];
+  if(curTool!=="pen" && curTool!=="eraser"){   // formes : aperçu en direct
+    snap = document.createElement("canvas");
+    snap.width = cv.width; snap.height = cv.height;
+    snap.getContext("2d").drawImage(cv,0,0);
+  }
+}
+function moveDraw(e){
+  if(!drawing) return;
+  e.preventDefault();
+  const p = pos(e);
+  if(curTool==="pen" || curTool==="eraser"){
+    drawStrokeObj({tool:curTool, color:curColor, size:curSize, pts:[lastPt,p]});
+    lastPt = p; pendingPts.push(p);
+    if(pendingPts.length >= 25) flushStroke();
+  }else{
+    restoreSnap();
+    drawStrokeObj({tool:curTool, color:curColor, size:curSize, pts:[anchor,p]});
+    lastPt = p;
+  }
+}
+function endDraw(){
+  if(!drawing) return;
+  drawing = false;
+  if(curTool==="pen" || curTool==="eraser") flushStroke();
+  else{
+    outbox.push({tool:curTool, gid:curGid, color:curColor,
+                 size:curSize, pts:[anchor, lastPt]});
+    snap = null;
+  }
+}
+function flushStroke(){
+  if(pendingPts.length >= 1)
+    outbox.push({tool:curTool, gid:curGid, color:curColor,
+                 size:curSize, pts:pendingPts});
+  pendingPts = lastPt ? [lastPt] : [];
+}
+cv.addEventListener("mousedown", startDraw);
+cv.addEventListener("mousemove", moveDraw);
+addEventListener("mouseup", endDraw);
+cv.addEventListener("touchstart", startDraw, {passive:false});
+cv.addEventListener("touchmove", moveDraw, {passive:false});
+cv.addEventListener("touchend", endDraw);
+
+setInterval(async () => {           // envoi des traits par paquets (~5/s)
+  if(!ROOM || GAME!=="draw" || (!outbox.length)) return;
+  const batch = outbox; outbox = [];
+  try{ await api("stroke",{room:ROOM,pid:PID,strokes:batch}); }catch(e){}
+}, 200);
+
+function clearCanvas(){
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,cv.width,cv.height); ctx.restore();
+  // fond papier de la zone de dessin (la gomme peint la même couleur)
+  ctx.fillStyle = PAPER;
+  ctx.fillRect(CRECT.x, CRECT.y, CRECT.w, CRECT.h);
+  ctx.strokeStyle = "#e8e4da"; ctx.lineWidth = 1;
+  ctx.strokeRect(CRECT.x+.5, CRECT.y+.5, CRECT.w-1, CRECT.h-1);
+}
+
+// ------------------------------------------------------------- barre d'outils
+const TOOLS = [["pen","✏️","Crayon"],["eraser","🧽","Gomme"],
+  ["line","／","Ligne"],["rect","▭","Rectangle"],
+  ["circle","◯","Cercle"],["fill","🪣","Remplir"]];
+
+function buildToolbar(){
+  const tb = $("toolbar"); tb.innerHTML = "";
+  TOOLS.forEach(([id,icon,label]) => {
+    const b = document.createElement("button");
+    b.type="button"; b.className="toolBtn"+(id===curTool?" sel":"");
+    b.textContent = icon; b.title = label;
+    b.onclick = () => { curTool=id; buildToolbar(); };
+    tb.appendChild(b);
+  });
+  tb.insertAdjacentHTML("beforeend",'<div class="sep"></div>');
+  COLORS.forEach(c => {
+    const d = document.createElement("div");
+    d.className = "swatch"+(c===curColor?" sel":"");
+    d.style.background = c;
+    d.onclick = () => { curColor=c; buildToolbar(); };
+    tb.appendChild(d);
+  });
+  tb.insertAdjacentHTML("beforeend",'<div class="sep"></div>');
+  [["Fin",3],["Moyen",6],["Gros",14]].forEach(([lb,s]) => {
+    const b = document.createElement("button");
+    b.type="button"; b.className="sizeBtn"+(s===curSize?" sel":"");
+    b.textContent = lb; b.onclick = () => { curSize=s; buildToolbar(); };
+    tb.appendChild(b);
+  });
+  const und = document.createElement("button");
+  und.type="button"; und.className="toolBtn"; und.textContent="↩️"; und.title="Annuler";
+  und.onclick = async () => {
+    try{ await api("stroke",{room:ROOM,pid:PID,undo:true,strokes:[]}); poll(true); }catch(e){}
+  };
+  tb.appendChild(und);
+  const clr = document.createElement("button");
+  clr.className = "btn small"; clr.type="button"; clr.textContent = "🗑️";
+  clr.title = "Tout effacer";
+  clr.onclick = async () => {
+    clearCanvas();
+    try{ await api("stroke",{room:ROOM,pid:PID,clear:true,strokes:[]}); }catch(e){}
+  };
+  tb.appendChild(clr);
+}
+
+// ------------------------------------------------------------- chat dessin
+let closeT = null;
+function showClose(){
+  const el = $("closeToast");
+  el.classList.add("show");
+  clearTimeout(closeT);
+  closeT = setTimeout(()=>el.classList.remove("show"), 2000);
+}
+// pendant la frappe sur mobile, on replie joueurs + fil (cf. CSS .typing)
+$("chatInput").addEventListener("focus",
+  () => $("game").classList.add("typing"));
+$("chatInput").addEventListener("blur",
+  () => $("game").classList.remove("typing"));
+
+$("chatForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const t = $("chatInput").value.trim();
+  if(!t) return;
+  $("chatInput").value = "";
+  try{
+    const j = await api("guess",{room:ROOM,pid:PID,text:t});
+    if(j && j.close) showClose();
+    if(j && j.priv){   // aide admin : affichée localement, jamais partagée
+      const d = document.createElement("div");
+      d.className = "msg priv"; d.textContent = j.priv;
+      $("chat").appendChild(d);
+      $("chat").scrollTop = $("chat").scrollHeight;
+    }
+    poll(true);
+  }catch(err){}
+});
+
+// ------------------------------------------------------------- rendu dessin
+function renderPlayers(list){
+  $("plist").innerHTML = list.map(p => `
+    <div class="pl ${p.me?"me":""} ${p.guessed?"guessed":""}">
+      <span class="role">${p.drawer?"✏️":p.guessed?"✅":(p.avatar||"🙂")}</span>
+      <span class="nm">${esc(p.name)}${p.host?" ⭐":""}</span>
+      ${kickBtn(p)}
+      ${p.gain?`<span class="gain">+${p.gain}</span>`:""}
+      <span class="sc">${p.score}</span>
+    </div>`).join("");
+}
+// bouton d'exclusion : admins seulement (le serveur n'envoie les pids qu'à eux)
+function kickBtn(p){
+  return (IS_ADMIN && p.pid && !p.me && !p.host)
+    ? `<button class="kickBtn" data-pid="${p.pid}" type="button"
+         title="Exclure ce joueur">⛔</button>` : "";
+}
+for(const id of ["plist","cplist","wplist"]) $(id).addEventListener("click", async e => {
+  const b = e.target.closest(".kickBtn");
+  if(!b || !confirm("Exclure ce joueur du salon ?")) return;
+  try{ await api("kick",{room:ROOM,pid:PID,target:b.dataset.pid}); }catch(err){}
+});
+function renderWord(word, label){
+  const bar = $("wordbar");
+  bar.innerHTML = label ? `<span class="wordLabel">${label}</span>` : "";
+  for(const ch of word){
+    const t = document.createElement("div");
+    t.className = "tile"+(ch===" "?" space":"");
+    t.textContent = ch==="_" ? "\u00a0" : ch;
+    bar.appendChild(t);
+  }
+}
+
+let lastOverlayKey = "";
+function renderOverlay(st){
+  const ov = $("overlay");
+  let key = st.state + (st.me_drawer?"D":"") + (st.choices||[]).map(c=>c.word).join(",")
+          + "|" + st.players.length + st.lang + st.mode + st.max_rounds + st.draw_time;
+  if(st.state==="end") key += JSON.stringify(st.players.map(p=>p.score));
+  if(key === lastOverlayKey) return;
+  lastOverlayKey = key;
+  ov.style.display = "flex"; ov.innerHTML = "";
+
+  if(st.state === "lobby"){
+    const me = st.players.find(p=>p.me);
+    ov.innerHTML = `<h2>Salon d'attente</h2>
+      <p>Code du salon : <b style="letter-spacing:3px">${ROOM}</b></p>
+      <p style="font-size:13px;word-break:break-all">Lien direct :
+        <b>${esc(shareLink())}</b>
+        <button class="btn small" type="button" style="font-size:14px;padding:2px 10px"
+          onclick="navigator.clipboard?.writeText(shareLink())">📋 Copier</button></p>
+      <p>${st.players.length} joueur(s) — il en faut au moins 2.</p>`;
+    if(me && me.host){
+      const cfg = document.createElement("div"); cfg.className = "cfg";
+      cfg.innerHTML = `
+        <label>Langue des mots
+          <select id="cfgLang">${Object.entries(st.lang_names).map(([k,v]) =>
+            `<option value="${k}" ${k===st.lang?"selected":""}>${v}</option>`).join("")}
+          </select></label>
+        <label>Mode de jeu
+          <select id="cfgMode">${Object.entries(st.mode_names).map(([k,v]) =>
+            `<option value="${k}" ${k===st.mode?"selected":""}>${v}</option>`).join("")}
+          </select></label>
+        <label>Tours
+          <select id="cfgRounds">${[2,3,4,5,6].map(n =>
+            `<option ${n===st.max_rounds?"selected":""}>${n}</option>`).join("")}
+          </select></label>
+        <label>Temps de dessin
+          <select id="cfgTime">${[45,60,75,90,120].map(n =>
+            `<option ${n===st.draw_time?"selected":""}>${n}</option>`).join("")}
+          </select></label>`;
+      ov.appendChild(cfg);
+      const hint = document.createElement("p");
+      hint.style.cssText = "font-size:14px;margin:4px 0 0";
+      hint.textContent = "🌱 mots ★/★★ · 🔥 mots ★★/★★★ · 💀 mots ★★★/★★★★ (plus d'étoiles = plus de points)";
+      ov.appendChild(hint);
+      const sendCfg = async () => {
+        try{ await api("config",{room:ROOM,pid:PID,lang:$("cfgLang").value,
+          mode:$("cfgMode").value,
+          rounds:$("cfgRounds").value,draw_time:$("cfgTime").value}); poll(true);
+        }catch(e){}
+      };
+      ["cfgLang","cfgMode","cfgRounds","cfgTime"].forEach(id => $(id).onchange = sendCfg);
+      const b = document.createElement("button");
+      b.className="btn"; b.style.width="auto"; b.textContent="🚀 Lancer la partie";
+      b.onclick = async()=>{ try{ await api("start",{room:ROOM,pid:PID}); }
+        catch(e){ alert(e.message); } };
+      ov.appendChild(b);
+    } else ov.insertAdjacentHTML("beforeend",
+      `<p>⚙️ ${st.lang_names[st.lang]} · ${st.mode_names[st.mode]} · ${st.max_rounds} tours · ${st.draw_time} s</p>
+       <p>L'hôte ⭐ va lancer la partie…</p>`);
+  }
+  else if(st.state === "choosing" && st.me_drawer){
+    ov.innerHTML = `<h2>À toi de dessiner !</h2>
+      <p>Choisis un mot — plus il est dur, plus il rapporte :</p>`;
+    const wrap = document.createElement("div"); wrap.className="choices";
+    st.choices.forEach(c=>{
+      const b=document.createElement("button");
+      b.className="btn choice-"+c.diff;
+      b.innerHTML = `${esc(c.word)}<span class="diffTag">${c.label} ${c.name} · ×${c.mult}</span>`;
+      b.onclick=async()=>{ try{ await api("choose",{room:ROOM,pid:PID,word:c.word});
+                                poll(true); }catch(e){} };
+      wrap.appendChild(b);
+    });
+    ov.appendChild(wrap);
+  }
+  else if(st.state === "choosing"){
+    ov.innerHTML = `<h2>${esc(st.drawer_name)} choisit un mot…</h2><p>✏️ Prépare-toi à deviner !</p>`;
+  }
+  else if(st.state === "reveal"){
+    ov.innerHTML = `<h2>Le mot était :</h2>
+      <h2 style="color:var(--crayon-c);font-size:44px">${esc(st.word)}</h2>`;
+  }
+  else if(st.state === "end"){
+    const podium = ["🥇","🥈","🥉"];
+    ov.innerHTML = `<h2>🏁 Résultats</h2>` + st.players.slice(0,5).map((p,i)=>
+      `<p style="font-size:${22-i*2}px"><b>${podium[i]||"•"} ${esc(p.name)}</b> — ${p.score} pts</p>`).join("");
+    const me = st.players.find(p=>p.me);
+    if(me && me.host){
+      const b=document.createElement("button");
+      b.className="btn"; b.style.width="auto"; b.textContent="🔁 Rejouer";
+      b.onclick=async()=>{ try{ await api("start",{room:ROOM,pid:PID}); }catch(e){} };
+      ov.appendChild(b);
+    }
+  }
+  else ov.style.display = "none";
+}
+
+// ------------------------------------------------------------- polling dessin
+let polling = false;
+document.addEventListener("visibilitychange", () => {
+  if(!document.hidden && ROOM){
+    if(GAME==="chain") pollChain(true);
+    else if(GAME==="wave") pollWave(true);
+    else poll(true);
+  }
+});
+async function poll(fast){
+  if(!ROOM || GAME!=="draw" || polling) return;
+  polling = true;
+  try{
+    const r = await fetch(`/api/state?room=${ROOM}&pid=${PID}&s=${strokeCursor}&c=${chatCursor}`);
+    if(r.status === 404){ sessionStorage.removeItem("recre"); location.reload(); return; }
+    const st = await r.json();
+    if(st.kicked){   // exclu : pas de re-join auto, message sur l'accueil
+      sessionStorage.setItem("kickmsg", "1");
+      leave(); return;
+    }
+    if(!st.in_room){
+      if(await rejoinOr()){
+        polling = false; clearTimeout(poll._t);
+        poll._t = setTimeout(poll, 120);
+      }
+      return;
+    }
+
+    STATE = st.state; ME_DRAWER = st.me_drawer;
+
+    // effacer / annuler : on vide le canvas et on rejoue tout au prochain tour
+    if(st.clear_seq !== clearSeen){
+      clearSeen = st.clear_seq; clearCanvas(); strokeCursor = 0; needFull = true;
+    }else{
+      for(const s of st.strokes){
+        strokeCursor = Math.max(strokeCursor, s.seq);
+        if(ME_DRAWER && !needFull) continue;  // déjà dessinés localement
+        drawStrokeObj(s);
+      }
+      needFull = false;
+    }
+    // nouveaux messages
+    for(const m of st.chat){
+      chatCursor = Math.max(chatCursor, m.seq);
+      const d = document.createElement("div");
+      d.className = "msg "+m.kind;
+      d.innerHTML = m.name ? `<b>${esc(m.name)} :</b> ${esc(m.text)}` : esc(m.text);
+      $("chat").appendChild(d);
+    }
+    if(st.chat.length) $("chat").scrollTop = $("chat").scrollHeight;
+    while($("chat").children.length > 120) $("chat").firstChild.remove();
+
+    renderPlayers(st.players);
+    renderOverlay(st);
+    $("roundTag").textContent = st.round ? `Tour ${st.round}/${st.max_rounds}` : "";
+    $("timer").textContent = st.time_left ? st.time_left : "";
+    $("timer").classList.toggle("urgent", st.time_left>0 && st.time_left<=10);
+    $("toolbar").style.display = (ME_DRAWER && STATE==="drawing") ? "flex" : "none";
+    if(ME_DRAWER && STATE==="drawing" && !$("toolbar").children.length) buildToolbar();
+    if(!(ME_DRAWER && STATE==="drawing")) $("toolbar").innerHTML="";
+    cv.style.cursor = (ME_DRAWER && STATE==="drawing") ? "crosshair" : "default";
+    $("game").classList.toggle("meDraw", ME_DRAWER && STATE==="drawing");
+    $("chatInput").placeholder = ME_DRAWER ? "Tu dessines, chut… 🤫" : "Devine ici…";
+
+    if(STATE==="drawing" || STATE==="reveal"){
+      renderWord(st.word || "", ME_DRAWER && STATE==="drawing" ? "Ton mot :" : "");
+    } else $("wordbar").innerHTML = "";
+  }catch(e){ /* réseau : on retentera */ }
+  polling = false;
+  clearTimeout(poll._t);
+  poll._t = setTimeout(poll, (fast || needFull) ? 120 : 400);
+}
+
+/* ═══════════════════════════════════════════════ ENCHAÎNE ! */
+let chainCursor = 0, feedCursor = 0, cPolling = false;
+let wordErrT = null;
+
+function showWordErr(msg){
+  const el = $("wordErr");
+  el.textContent = msg;
+  el.classList.add("show");
+  $("wordInput").classList.add("shake");
+  setTimeout(()=>$("wordInput").classList.remove("shake"), 350);
+  clearTimeout(wordErrT);
+  wordErrT = setTimeout(()=>el.classList.remove("show"), 2600);
+}
+
+// pendant la frappe sur mobile, on replie journal + joueurs (cf. CSS .typing)
+$("wordInput").addEventListener("focus",
+  () => $("cgame").classList.add("typing"));
+$("wordInput").addEventListener("blur",
+  () => $("cgame").classList.remove("typing"));
+
+$("wordForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const t = $("wordInput").value.trim();
+  if(!t) return;
+  try{
+    const j = await api("word",{room:ROOM,pid:PID,word:t});
+    if(j.error){ showWordErr(j.error); }
+    else{ $("wordInput").value = ""; }
+    pollChain(true);
+  }catch(err){ showWordErr(err.message); }
+});
+
+function renderChainPlayers(list){
+  $("cplist").innerHTML = list.map(p => `
+    <div class="pl ${p.me?"me":""} ${p.turn?"turn":""} ${!p.alive?"dead":""}">
+      <span class="role">${p.turn?"🎯":!p.alive?"💀":(p.avatar||"🙂")}</span>
+      <span class="nm">${esc(p.name)}${p.host?" ⭐":""}
+        <div class="hearts">${"❤️".repeat(Math.max(0,p.lives))}</div></span>
+      ${kickBtn(p)}
+      <span class="sc" title="mots trouvés">${p.words||0} mot${p.words>1?"s":""}</span>
+    </div>`).join("");
+}
+
+function renderPrefix(prefix, label){
+  const bar = $("cWordbar");
+  bar.innerHTML = label ? `<span class="wordLabel">${label}</span>` : "";
+  for(const ch of prefix){
+    const t = document.createElement("div");
+    t.className = "tile hot";
+    t.textContent = ch;
+    bar.appendChild(t);
+  }
+  // \u00ab \u2026 \u00bb : la longueur du mot est libre (pas de tirets trompeurs)
+  if(prefix){
+    const t = document.createElement("div");
+    t.className = "tile dots";
+    t.textContent = "\u2026";
+    bar.appendChild(t);
+  }
+}
+
+function addChainWord(e){
+  const log = $("chainLog");
+  const d = document.createElement("span");
+  d.className = "cword";
+  // met en valeur les lettres imposées (le début tiré au sort)
+  const n = Math.min(e.lvl, e.word.length - 1);
+  const head = esc(e.word.slice(0, n)), tail = esc(e.word.slice(n));
+  d.innerHTML = `<span class="w"><b>${head}</b>${tail}</span>`;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+  while(log.children.length > 260) log.firstChild.remove();
+}
+
+let lastCOverlayKey = "";
+function renderChainOverlay(st){
+  const ov = $("cOverlay");
+  let key = st.state + "|" + st.players.length + st.lang + st.turn_time + st.lives_max;
+  if(st.state==="end") key += st.winner + JSON.stringify(st.players.map(p=>p.words));
+  if(key === lastCOverlayKey) return;
+  lastCOverlayKey = key;
+  ov.style.display = "flex"; ov.innerHTML = "";
+
+  if(st.state === "lobby"){
+    const me = st.players.find(p=>p.me);
+    ov.innerHTML = `<h2>Salon d'attente</h2>
+      <p>Code du salon : <b style="letter-spacing:3px">${ROOM}</b></p>
+      <p style="font-size:13px;word-break:break-all">Lien direct :
+        <b>${esc(shareLink())}</b>
+        <button class="btn small" type="button" style="font-size:14px;padding:2px 10px"
+          onclick="navigator.clipboard?.writeText(shareLink())">📋 Copier</button></p>
+      <p>${st.players.length} joueur(s) — il en faut au moins 2.</p>
+      <p style="font-size:14px;max-width:420px">🔗 À chaque tour, trouve un mot qui
+      <b>commence par les lettres tirées au sort</b> — et qui <b>existe dans le
+      dictionnaire</b> ! Interdit de rejouer un mot. Plus la partie dure, plus le
+      début imposé est long (1 → 2 → 3 lettres)… Pas de mot à temps = -1 ❤️.</p>`;
+    if(me && me.host){
+      const cfg = document.createElement("div"); cfg.className = "cfg";
+      cfg.innerHTML = `
+        <label>Langue des mots
+          <select id="ccfgLang">${Object.entries(st.lang_names).map(([k,v]) =>
+            `<option value="${k}" ${k===st.lang?"selected":""}>${v}</option>`).join("")}
+          </select></label>
+        <label>Temps par tour
+          <select id="ccfgTime">${[10,15,20,30,45].map(n =>
+            `<option ${n===st.turn_time?"selected":""}>${n}</option>`).join("")}
+          </select></label>
+        <label>Vies
+          <select id="ccfgLives">${[1,2,3,4,5].map(n =>
+            `<option ${n===st.lives_max?"selected":""}>${n}</option>`).join("")}
+          </select></label>`;
+      ov.appendChild(cfg);
+      const sendCfg = async () => {
+        try{ await api("config",{room:ROOM,pid:PID,
+          lang:$("ccfgLang").value,
+          turn_time:$("ccfgTime").value,lives:$("ccfgLives").value});
+          pollChain(true); }catch(e){}
+      };
+      ["ccfgLang","ccfgTime","ccfgLives"].forEach(id => $(id).onchange = sendCfg);
+      const b = document.createElement("button");
+      b.className="btn"; b.style.width="auto"; b.textContent="🚀 Lancer la partie";
+      b.onclick = async()=>{ try{ await api("start",{room:ROOM,pid:PID}); }
+        catch(e){ alert(e.message); } };
+      ov.appendChild(b);
+    } else ov.insertAdjacentHTML("beforeend",
+      `<p>⚙️ ${st.lang_names[st.lang]} · ${st.turn_time} s par tour · ${st.lives_max} ❤️</p>
+       <p>L'hôte ⭐ va lancer la partie…</p>`);
+  }
+  else if(st.state === "end"){
+    const podium = ["🥇","🥈","🥉"];
+    ov.innerHTML = `<h2>🏁 Résultats</h2>`
+      + (st.winner ? `<h2 style="color:var(--crayon-c);font-size:40px">🏆 ${esc(st.winner)}</h2>` : "")
+      + `<p>${st.words_count} mots enchaînés !</p>`
+      + st.players.slice(0,5).map((p,i)=>
+        `<p style="font-size:${22-i*2}px"><b>${podium[i]||"•"} ${esc(p.name)}</b> — ${p.words||0} mot${p.words>1?"s":""}</p>`).join("");
+    const me = st.players.find(p=>p.me);
+    if(me && me.host){
+      const b=document.createElement("button");
+      b.className="btn"; b.style.width="auto"; b.textContent="🔁 Rejouer";
+      b.onclick=async()=>{ try{ await api("start",{room:ROOM,pid:PID}); }catch(e){} };
+      ov.appendChild(b);
+    }
+  }
+  else ov.style.display = "none";
+}
+
+async function pollChain(fast){
+  if(!ROOM || GAME!=="chain" || cPolling) return;
+  cPolling = true;
+  let myTurn = false;
+  try{
+    const r = await fetch(`/api/state?room=${ROOM}&pid=${PID}&w=${chainCursor}&f=${feedCursor}`);
+    if(r.status === 404){ sessionStorage.removeItem("recre"); location.reload(); return; }
+    const st = await r.json();
+    if(st.kicked){   // exclu : pas de re-join auto, message sur l'accueil
+      sessionStorage.setItem("kickmsg", "1");
+      leave(); return;
+    }
+    if(!st.in_room){
+      if(await rejoinOr()){
+        cPolling = false; clearTimeout(pollChain._t);
+        pollChain._t = setTimeout(pollChain, 120);
+      }
+      return;
+    }
+    STATE = st.state;
+    myTurn = st.me_turn;
+
+    // nouvelle partie ? (la chaîne est vidée côté serveur au restart)
+    if(st.state === "playing" && st.words_count === 0 &&
+       $("chainLog").children.length && !st.chain.length){
+      $("chainLog").innerHTML = "";
+    }
+    for(const e of st.chain){
+      chainCursor = Math.max(chainCursor, e.seq);
+      addChainWord(e);
+    }
+    for(const m of st.feed){
+      feedCursor = Math.max(feedCursor, m.seq);
+      const d = document.createElement("div");
+      d.className = "msg "+m.kind;
+      d.innerHTML = m.name ? `<b>${esc(m.name)} :</b> ${esc(m.text)}` : esc(m.text);
+      $("cfeed").appendChild(d);
+    }
+    if(st.feed.length) $("cfeed").scrollTop = $("cfeed").scrollHeight;
+    while($("cfeed").children.length > 120) $("cfeed").firstChild.remove();
+
+    renderChainPlayers(st.players);
+    renderChainOverlay(st);
+
+    $("cTimer").textContent = st.time_left ? st.time_left : "";
+    $("cTimer").classList.toggle("urgent", st.time_left>0 && st.time_left<=5);
+    $("cCount").textContent = st.state==="playing" ? `${st.words_count} mots` : "";
+    const lt = $("lvlTag");
+    if(st.state==="playing"){
+      lt.style.display = "";
+      lt.textContent = `Niveau ${st.level}`;
+      lt.title = `Début imposé de ${st.level} lettre${st.level>1?"s":""}`;
+    } else lt.style.display = "none";
+
+    if(st.state === "playing"){
+      renderPrefix(st.prefix.toUpperCase(),
+        st.me_turn ? "Ton mot commence par :" : "Le mot commence par :");
+      const tb = $("turnBanner");
+      if(st.me_turn){
+        tb.innerHTML = `🎯 À toi de jouer !`;
+      }else if(st.me_alive){
+        tb.innerHTML = `C'est au tour de <b>${esc(st.turn_name)}</b>…`;
+      }else{
+        tb.innerHTML = `💀 Tu es éliminé — <b>${esc(st.turn_name)}</b> joue. Regarde le journal !`;
+      }
+      $("wordPrefix").textContent = st.prefix.toUpperCase() + "…";
+      $("wordForm").style.display = st.me_turn ? "flex" : "none";
+      if(st.me_turn && !pollChain._hadTurn){ $("wordInput").focus(); }
+      pollChain._hadTurn = st.me_turn;
+    }else{
+      $("cWordbar").innerHTML = "";
+      $("turnBanner").innerHTML = "";
+      $("wordPrefix").textContent = "";
+      $("wordForm").style.display = "none";
+      $("cgame").classList.remove("typing");
+      pollChain._hadTurn = false;
+    }
+    if(!st.me_turn) $("cgame").classList.remove("typing");
+  }catch(e){ /* réseau : on retentera */ }
+  cPolling = false;
+  clearTimeout(pollChain._t);
+  pollChain._t = setTimeout(pollChain, (fast || myTurn) ? 250 : 450);
+}
+
+/* ═══════════════════════════════════════════════ LONGUEUR D'ONDE ! */
+// Géométrie du cadran : demi-disque, x=0 à gauche, x=1 à droite.
+const WC = {x:210, y:212, r:186};
+const SVGNS = "http://www.w3.org/2000/svg";
+const dial = $("dial");
+let wPos = .5, wPlaced = false, wDrag = false, wPolling = false;
+let wSt = null, wActKey = "", wOvKey = "", wErrT = null;
+
+function svgEl(tag, at){
+  const e = document.createElementNS(SVGNS, tag);
+  for(const k in at) e.setAttribute(k, at[k]);
+  return e;
+}
+function wpt(x, r){
+  const a = Math.PI * (1 - x);
+  return [WC.x + r*Math.cos(a), WC.y - r*Math.sin(a)];
+}
+function wwedge(x0, x1, r){
+  const [ax,ay] = wpt(x0,r), [bx,by] = wpt(x1,r);
+  return `M ${WC.x} ${WC.y} L ${ax.toFixed(2)} ${ay.toFixed(2)} `
+       + `A ${r} ${r} 0 0 1 ${bx.toFixed(2)} ${by.toFixed(2)} Z`;
+}
+// graduations, une fois pour toutes
+(function(){
+  const g = $("dTicks");
+  for(let i = 0; i <= 10; i++){
+    const [ax,ay] = wpt(i/10, WC.r);
+    const [bx,by] = wpt(i/10, WC.r - (i % 5 ? 9 : 16));
+    g.appendChild(svgEl("line",{x1:ax,y1:ay,x2:bx,y2:by,class:"tick"}));
+  }
+})();
+
+// bandes de score autour de la cible : 5 pts au centre, puis 3, puis 1
+function drawBands(t, band){
+  const g = $("dBands");
+  g.textContent = "";
+  if(t === null || t === undefined) return;
+  band = band || .04;
+  for(const [k, cls] of [[2.5,"b1"],[1.5,"b3"],[.5,"b5"]])
+    g.appendChild(svgEl("path",{class:"band "+cls,
+      d:wwedge(Math.max(0, t-band*k), Math.min(1, t+band*k), WC.r)}));
+}
+// couleurs d'identification (évitent la terre cuite de la cible), assez
+// contrastées sur le cadran clair comme sur le thème sombre
+const WCOL = ["#3b7dd8", "#2f9e6b", "#9364d9", "#12a3b8",
+              "#d4569b", "#7fa63c", "#5f5fd6", "#6b7280"];
+const wcol = i => WCOL[i % WCOL.length];
+
+function addNeedle(g, x, cls, couleur){
+  const [px,py] = wpt(x, WC.r - 5);
+  const l = svgEl("line",{x1:WC.x,y1:WC.y,x2:px,y2:py,class:"nd "+cls});
+  const k = svgEl("circle",{cx:px,cy:py,r:7,class:"nd knob "+cls});
+  if(couleur){ l.style.stroke = couleur; k.style.fill = couleur; }
+  g.appendChild(l); g.appendChild(k);
+}
+// pastille « avatar » au bout de l'aiguille, cerclée de la couleur du joueur
+function addLabel(g, x, r, txt, couleur){
+  const [px,py] = wpt(x, r);
+  const c = svgEl("circle",{cx:px,cy:py,r:12,class:"lblring"});
+  c.style.stroke = couleur;
+  g.appendChild(c);
+  const t = svgEl("text",{x:px,y:py,class:"lbltxt"});
+  t.textContent = txt;
+  g.appendChild(t);
+}
+function refreshNeedles(){
+  const g = $("dNeedles");
+  g.textContent = "";
+  if(!wSt) return;
+  if(wSt.state === "reveal"){
+    // la cible d'abord : les aiguilles des joueurs passent par-dessus
+    if(wSt.target !== null && wSt.target !== undefined)
+      addNeedle(g, wSt.target, "target");
+    const rangs = [];        // dernière position posée sur chaque rangée
+    wSt.needles.forEach((n, i) => {
+      const c = wcol(i);
+      addNeedle(g, n.pos, n.me ? "joueur moi" : "joueur", c);
+      // deux réponses voisines : on rentre la pastille d'un cran pour
+      // qu'elles ne se chevauchent pas (les aiguilles sont triées)
+      let rang = 0;
+      while(rangs[rang] !== undefined && Math.abs(rangs[rang] - n.pos) < .08)
+        rang++;
+      rangs[rang] = n.pos;
+      addLabel(g, n.pos, WC.r + 11 - rang * 27, n.avatar || "🙂", c);
+    });
+  }else if(wSt.state === "guess" && !wSt.me_master){
+    addNeedle(g, wPos, "mine");
+  }
+}
+
+// ------------------------------------------------- placer son aiguille
+const canPlace = () => !!wSt && wSt.state === "guess" && !wSt.me_master
+                       && !wPlaced;
+function dialX(e){
+  const r = dial.getBoundingClientRect();
+  const px = (e.clientX - r.left) * (420 / r.width);
+  const py = (e.clientY - r.top)  * (232 / r.height);
+  let a = Math.atan2(WC.y - py, px - WC.x);
+  if(a < 0) a = px < WC.x ? Math.PI : 0;   // sous le cadran : on rabat
+  return Math.max(0, Math.min(1, 1 - a / Math.PI));
+}
+dial.addEventListener("pointerdown", e => {
+  if(!canPlace()) return;
+  e.preventDefault();
+  wDrag = true; wPos = dialX(e); refreshNeedles();
+});
+window.addEventListener("pointermove", e => {
+  if(!wDrag) return;
+  e.preventDefault();
+  wPos = dialX(e); refreshNeedles();
+});
+window.addEventListener("pointerup", () => { wDrag = false; });
+dial.addEventListener("keydown", e => {
+  if(!canPlace()) return;
+  const step = e.shiftKey ? .02 : .005;
+  if(e.key === "ArrowLeft") wPos = Math.max(0, wPos - step);
+  else if(e.key === "ArrowRight") wPos = Math.min(1, wPos + step);
+  else return;
+  e.preventDefault(); refreshNeedles();
+});
+
+function showWErr(msg){
+  const el = $("wErr");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(wErrT);
+  wErrT = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+// ------------------------------------------------- zone d'action (phase)
+function buildAction(st){
+  const a = $("wAction");
+  a.textContent = "";
+  if(st.state === "axis" && st.me_master){
+    a.innerHTML = `<form id="axisForm" class="wform">
+      <input id="axTheme" maxlength="32" placeholder="Thème (ex. Un animal)"
+             autocomplete="off">
+      <input id="axLeft" maxlength="28" placeholder="Extrême gauche"
+             autocomplete="off">
+      <input id="axRight" maxlength="28" placeholder="Extrême droite"
+             autocomplete="off">
+      <button class="btn small" type="submit">Valider l'axe</button></form>`;
+    $("axisForm").onsubmit = async e => {
+      e.preventDefault();
+      try{
+        await api("wave_axis",{room:ROOM, pid:PID, theme:$("axTheme").value,
+                               left:$("axLeft").value, right:$("axRight").value});
+        pollWave(true);
+      }catch(err){ showWErr(err.message); }
+    };
+    setTimeout(() => $("axTheme").focus(), 30);
+  }
+  else if(st.state === "clue" && st.me_master){
+    a.innerHTML = `<form id="clueForm" class="wform">
+      <input id="clueInput" maxlength="60" placeholder="Ton indice…"
+             autocomplete="off">
+      <button class="btn small" type="submit">➤</button></form>`;
+    $("clueForm").onsubmit = async e => {
+      e.preventDefault();
+      const v = $("clueInput").value.trim();
+      if(!v) return;
+      try{
+        await api("wave_clue",{room:ROOM, pid:PID, clue:v});
+        $("clueInput").value = ""; pollWave(true);
+      }catch(err){ showWErr(err.message); }
+    };
+    setTimeout(() => $("clueInput").focus(), 30);
+  }
+  else if(st.state === "guess" && !st.me_master && !wPlaced){
+    const b = document.createElement("button");
+    b.className = "btn small";
+    b.textContent = "✅ Valider ma réponse";
+    b.onclick = async () => {
+      b.disabled = true;
+      try{
+        await api("wave_place",{room:ROOM, pid:PID, pos:wPos});
+        wPlaced = true; pollWave(true);
+      }catch(err){ b.disabled = false; showWErr(err.message); }
+    };
+    a.appendChild(b);
+  }
+  // champs repliés sur mobile pendant la frappe (cf. CSS .typing)
+  a.querySelectorAll("input").forEach(i => {
+    i.addEventListener("focus", () => $("wgame").classList.add("typing"));
+    i.addEventListener("blur", () => $("wgame").classList.remove("typing"));
+  });
+}
+
+function renderWavePlayers(list){
+  $("wplist").innerHTML = list.map(p => `
+    <div class="pl ${p.me?"me":""} ${p.master?"turn":""} ${p.done?"guessed":""}">
+      <span class="role">${p.master?"📡":(p.avatar||"🙂")}</span>
+      <span class="nm">${esc(p.name)}${p.host?" ⭐":""}</span>
+      ${kickBtn(p)}
+      <span class="sc">${p.score}${p.gain?` <span class="gain">+${p.gain}</span>`:""}</span>
+    </div>`).join("");
+}
+
+function renderWaveOverlay(st){
+  const ov = $("wOverlay");
+  let key = st.state + "|" + st.players.length + st.mode + st.max_rounds;
+  if(st.state === "end") key += JSON.stringify(st.players.map(p => p.score));
+  if(key === wOvKey) return;
+  wOvKey = key;
+  ov.style.display = "flex"; ov.innerHTML = "";
+
+  if(st.state === "lobby"){
+    const me = st.players.find(p => p.me);
+    ov.innerHTML = `<h2>Salon d'attente</h2>
+      <p>Code du salon : <b style="letter-spacing:3px">${ROOM}</b></p>
+      <p style="font-size:13px;word-break:break-all">Lien direct :
+        <b>${esc(shareLink())}</b>
+        <button class="btn small" type="button" style="font-size:14px;padding:2px 10px"
+          onclick="navigator.clipboard?.writeText(shareLink())">📋 Copier</button></p>
+      <p>${st.players.length} joueur(s) — il en faut au moins 2.</p>
+      <p style="font-size:14px;max-width:440px">📡 Chacun son tour, un joueur
+      voit une <b>cible cachée</b> sur un axe (ex. <i>Un animal :
+      effrayant ↔ adorable</i>) et donne <b>un indice</b> qui tombe pile
+      dessus. Les autres placent leur aiguille : au bon endroit
+      <b>5 pts</b>, juste à côté <b>3</b>, un peu plus loin <b>1</b>.
+      Le maître empoche la moyenne de ce que son indice a rapporté.</p>`;
+    if(me && me.host){
+      const cfg = document.createElement("div"); cfg.className = "cfg";
+      cfg.innerHTML = `
+        <label>Mode
+          <select id="wcfgMode">${Object.entries(st.mode_names).map(([k,v]) =>
+            `<option value="${k}" ${k===st.mode?"selected":""}>${v}</option>`).join("")}
+          </select></label>
+        <label>Tours
+          <select id="wcfgRounds">${[1,2,3,4,5].map(n =>
+            `<option ${n===st.max_rounds?"selected":""}>${n}</option>`).join("")}
+          </select></label>`;
+      ov.appendChild(cfg);
+      const hint = document.createElement("p");
+      hint.style.cssText = "font-size:13.5px;margin:2px 0 0;max-width:440px";
+      hint.textContent = "📚 Axes préfaits : thème et extrêmes tirés au sort, "
+        + "tu n'as que l'indice à trouver. ✍️ Tout personnalisé : le maître "
+        + "invente aussi le thème et les deux extrêmes.";
+      ov.appendChild(hint);
+      const sendCfg = async () => {
+        try{
+          await api("config",{room:ROOM, pid:PID, mode:$("wcfgMode").value,
+                              rounds:$("wcfgRounds").value});
+          pollWave(true);
+        }catch(e){}
+      };
+      ["wcfgMode","wcfgRounds"].forEach(id => $(id).onchange = sendCfg);
+      const b = document.createElement("button");
+      b.className = "btn"; b.style.width = "auto";
+      b.textContent = "🚀 Lancer la partie";
+      b.onclick = async () => { try{ await api("start",{room:ROOM,pid:PID}); }
+        catch(e){ alert(e.message); } };
+      ov.appendChild(b);
+    } else ov.insertAdjacentHTML("beforeend",
+      `<p>⚙️ ${st.mode_names[st.mode]} · ${st.max_rounds} tour(s)</p>
+       <p>L'hôte ⭐ va lancer la partie…</p>`);
+  }
+  else if(st.state === "end"){
+    const podium = ["🥇","🥈","🥉"];
+    ov.innerHTML = `<h2>🏁 Classement</h2>` + st.players.slice(0,6).map((p,i) =>
+      `<p style="font-size:${22-i*2}px"><b>${podium[i]||"•"} ${esc(p.name)}</b>
+        — ${p.score} pt${p.score>1?"s":""}</p>`).join("");
+    const me = st.players.find(p => p.me);
+    if(me && me.host){
+      const b = document.createElement("button");
+      b.className = "btn"; b.style.width = "auto"; b.textContent = "🔁 Rejouer";
+      b.onclick = async () => { try{ await api("start",{room:ROOM,pid:PID}); }catch(e){} };
+      ov.appendChild(b);
+    }
+  }
+  else ov.style.display = "none";
+}
+
+function renderWave(st){
+  wSt = st;
+  const live = ["axis","clue","guess","reveal"].includes(st.state);
+  $("wTheme").textContent = live ? (st.theme || "") : "";
+  $("wLeft").textContent  = live ? (st.left  || "") : "";
+  $("wRight").textContent = live ? (st.right || "") : "";
+  $("wClue").textContent  = st.clue || "";
+  drawBands(live ? st.target : null, st.band);
+
+  if(st.state === "guess"){
+    if(st.my_pos !== null && st.my_pos !== undefined){
+      if(!wDrag) wPos = st.my_pos;
+      wPlaced = true;
+    }else{
+      if(pollWave._prev !== "guess") wPos = .5;
+      wPlaced = false;
+    }
+  }else wPlaced = false;
+
+  const key = st.state + "|" + st.me_master + "|" + wPlaced;
+  if(key !== wActKey){ wActKey = key; buildAction(st); }
+
+  let msg = "";
+  if(st.state === "axis") msg = st.me_master
+    ? "Choisis deux extrêmes opposés (et un thème) — la cible apparaîtra ensuite."
+    : `🎛️ <b>${esc(st.master_name)}</b> prépare son axe…`;
+  else if(st.state === "clue") msg = st.me_master
+    ? "Ta cible est en couleur : trouve un indice qui tombe pile dessus."
+    : `🎯 <b>${esc(st.master_name)}</b> cherche un indice…`;
+  else if(st.state === "guess") msg = st.me_master
+    ? `En attente des réponses… <b>${st.answered}/${st.need}</b>`
+    : (wPlaced ? `✔️ Réponse enregistrée — <b>${st.answered}/${st.need}</b>`
+               : `Fais glisser l'aiguille, puis valide — <b>${st.answered}/${st.need}</b>`);
+  else if(st.state === "reveal") msg = `🎯 La cible de <b>${esc(st.master_name)}</b> était ici.`;
+  $("wStatus").innerHTML = msg;
+
+  if(st.state === "reveal"){
+    // même couleur que l'aiguille : la pastille fait le lien
+    let chips = st.needles.map((n, i) =>
+      `<span class="wres ${n.pts?"ok":""}" style="border-color:${wcol(i)}">
+        <i class="pin" style="background:${wcol(i)}"></i>${n.avatar||"🙂"}
+        ${esc(n.name)}${n.me?" (toi)":""} <b>+${n.pts}</b></span>`).join("");
+    if(!st.needles.length)
+      chips = `<span class="wres vide">Personne n'a répondu…</span>`;
+    const mai = st.players.find(p => p.master);
+    if(mai) chips += `<span class="wres maitre" title="prime du maître :
+      la moyenne de ce que son indice a rapporté">📡 ${esc(mai.name)}
+      <b>+${mai.gain}</b></span>`;
+    $("wResult").innerHTML = chips;
+  }else $("wResult").innerHTML = "";
+
+  refreshNeedles();
+  dial.classList.toggle("live", canPlace());
+  renderWavePlayers(st.players);
+  renderWaveOverlay(st);
+}
+
+// ------------------------------------------------- chat
+$("wchatForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const t = $("wchatInput").value.trim();
+  if(!t) return;
+  $("wchatInput").value = "";
+  try{
+    const j = await api("guess",{room:ROOM, pid:PID, text:t});
+    if(j.priv){
+      const d = document.createElement("div");
+      d.className = "msg priv"; d.textContent = j.priv;
+      $("wchat").appendChild(d);
+      $("wchat").scrollTop = $("wchat").scrollHeight;
+    }
+  }catch(err){}
+  pollWave(true);
+});
+$("wchatInput").addEventListener("focus",
+  () => $("wgame").classList.add("typing"));
+$("wchatInput").addEventListener("blur",
+  () => $("wgame").classList.remove("typing"));
+
+// ------------------------------------------------- polling
+async function pollWave(fast){
+  if(!ROOM || GAME !== "wave" || wPolling) return;
+  wPolling = true;
+  let active = false;
+  try{
+    const r = await fetch(`/api/state?room=${ROOM}&pid=${PID}&c=${chatCursor}`);
+    if(r.status === 404){ sessionStorage.removeItem("recre"); location.reload(); return; }
+    const st = await r.json();
+    if(st.kicked){ sessionStorage.setItem("kickmsg","1"); leave(); return; }
+    if(!st.in_room){
+      if(await rejoinOr()){
+        wPolling = false; clearTimeout(pollWave._t);
+        pollWave._t = setTimeout(pollWave, 120);
+      }
+      return;
+    }
+    STATE = st.state;
+    active = ["axis","clue","guess"].includes(st.state);
+
+    for(const m of st.chat){
+      chatCursor = Math.max(chatCursor, m.seq);
+      const d = document.createElement("div");
+      d.className = "msg " + m.kind;
+      d.innerHTML = m.name ? `<b>${esc(m.name)} :</b> ${esc(m.text)}` : esc(m.text);
+      $("wchat").appendChild(d);
+    }
+    if(st.chat.length) $("wchat").scrollTop = $("wchat").scrollHeight;
+    while($("wchat").children.length > 120) $("wchat").firstChild.remove();
+
+    renderWave(st);
+    pollWave._prev = st.state;
+
+    $("wTimer").textContent = st.time_left ? st.time_left : "";
+    $("wTimer").classList.toggle("urgent", st.time_left > 0 && st.time_left <= 5);
+    $("wRoundTag").textContent =
+      ["lobby","end"].includes(st.state) ? "" : `Tour ${st.round}/${st.max_rounds}`;
+    if(!active) $("wgame").classList.remove("typing");
+  }catch(e){ /* réseau : on retentera */ }
+  wPolling = false;
+  clearTimeout(pollWave._t);
+  pollWave._t = setTimeout(pollWave, (fast || active) ? 300 : 500);
+}
+
+/* ═══════════════════════════════════════════════ GLOUTON ! (arène) */
+// Le serveur est autoritaire mais ne parle que ~9 fois par seconde : on
+// interpole tout le monde 110 ms dans le passé, et on PRÉDIT ses propres
+// cellules en rejouant la formule de déplacement du serveur, corrigée en
+// douceur à chaque snapshot. Sans ça, on jouerait avec un aller-retour de
+// retard sur sa propre souris.
+const acv = $("acv"), actx = acv.getContext("2d");
+const A_CADENCE = 100;                // ms entre deux envois (cadence fixe)
+const A_MIN_PX = 11;                  // rayon mini de ma cellule à l'écran
+let aGap = A_CADENCE;                 // intervalle réellement observé
+let aPing = 10;                       // aller-retour lissé
+let aTheme = {nom: "", bg: "#faf9f5", bord: "#e8e4da", mur: "#7a7468"};
+let aPid = null, aPal = [], aMonde = 3400, aRun = false, aSeen = 0;
+let aPrev = null, aCur = null;        // deux derniers snapshots {at, d}
+let aPred = {};                       // id -> {x,y} prédiction de mes cellules
+let aCam = {x: 1700, y: 1700, s: 1};
+let aTarget = {x: 1700, y: 1700};
+let aPointer = null;                  // dernière position du curseur (px)
+let aSplit = false, aEject = false, aDeadKey = "";
+
+function aRayon(m){ return Math.sqrt(m) * 4.2; }
+function aVitesse(m){ return 430 / Math.pow(m, 0.33); }
+function aOmbre(hex){
+  const n = parseInt(hex.slice(1), 16);
+  const f = v => Math.round(v * 0.72);
+  return `rgb(${f(n>>16 & 255)},${f(n>>8 & 255)},${f(n & 255)})`;
+}
+
+// même formule que le serveur : sert à la prédiction ET au recalage
+function aAvance(px, py, m, dt){
+  const dx = aTarget.x - px, dy = aTarget.y - py;
+  const d = Math.hypot(dx, dy);
+  if(d > 1e-6){
+    const v = aVitesse(m) * Math.min(1, d / Math.max(24, aRayon(m))) * dt;
+    const k = Math.min(d, v) / d;
+    px += dx * k; py += dy * k;
+  }
+  const r = aRayon(m);
+  return [Math.max(r, Math.min(aMonde - r, px)),
+          Math.max(r, Math.min(aMonde - r, py))];
+}
+
+function aCouleurs(){
+  const nom = document.documentElement.dataset.theme || "clair";
+  if(nom === aTheme.nom) return aTheme;      // pas de recalcul de style
+  const css = getComputedStyle(document.documentElement);
+  aTheme = {nom: nom,
+            bg: css.getPropertyValue("--bg").trim() || "#faf9f5",
+            bord: css.getPropertyValue("--border").trim() || "#e8e4da",
+            mur: css.getPropertyValue("--muted").trim() || "#7a7468"};
+  return aTheme;
+}
+
+function fitArena(){
+  const box = $("arena").getBoundingClientRect();
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  acv.width = Math.max(1, Math.round(box.width * dpr));
+  acv.height = Math.max(1, Math.round(box.height * dpr));
+  actx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener("resize", () => { if(aRun) fitArena(); });
+
+// ------------------------------------------------- entrer / sortir
+async function agarJoin(nom){
+  nom = (nom || $("nameInput").value.trim() || "Anonyme").slice(0, 14);
+  const j = await api("agar/join", {name: nom, avatar: myAvatar});
+  aPid = PID = j.pid; aPal = j.palette; aMonde = j.monde;
+  GAME = "agar"; ROOM = null;
+  sessionStorage.setItem("recre",
+    JSON.stringify({game: "agar", pid: aPid, name: nom}));
+  return j;
+}
+function agarEcran(){
+  $("home").style.display = "none";
+  $("settingsBtn").style.display = "none";
+  $("settingsModal").style.display = "none";
+  $("agame").style.display = "flex";
+  document.body.classList.add("ingame");
+  aRun = true;
+  fitArena(); setTimeout(fitArena, 300);
+  agarLoop(); requestAnimationFrame(agarDraw);
+}
+async function agarDemarrer(){
+  try{ await agarJoin(); agarEcran(); }
+  catch(e){ $("homeErr").textContent = e.message; }
+}
+// jeton inconnu du serveur (timeout, redémarrage) : on se réinscrit
+async function agarReprise(){
+  if(agarReprise._busy) return;
+  agarReprise._busy = true;
+  const s = JSON.parse(sessionStorage.getItem("recre") || "null");
+  try{ await agarJoin(s && s.name); }catch(e){}
+  agarReprise._busy = false;
+}
+function agarQuitte(){
+  if(!aPid) return;
+  try{
+    navigator.sendBeacon("/api/agar/leave",
+      new Blob([JSON.stringify({pid: aPid})], {type: "application/json"}));
+  }catch(e){}
+}
+addEventListener("pagehide", agarQuitte);
+
+// ------------------------------------------------- réseau
+async function agarLoop(){
+  if(!aRun) return;
+  const s = aSplit, e = aEject;
+  aSplit = aEject = false;
+  const envoi = performance.now();
+  try{
+    const r = await fetch("/api/agar/play", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({pid: aPid, tx: aTarget.x, ty: aTarget.y,
+                            split: s, eject: e, seen: aSeen})});
+    const d = await r.json();
+    aPing += (performance.now() - envoi - aPing) * 0.15;
+    if(d.perdu) await agarReprise();
+    else agarSnap(d);
+  }catch(err){ /* réseau : on retentera au tour suivant */ }
+  // cadence FIXE : on retire le temps déjà passé, sinon on envoie
+  // toutes les « 100 ms + aller-retour » et le flux se dégrade avec le ping
+  clearTimeout(agarLoop._t);
+  agarLoop._t = setTimeout(agarLoop,
+    Math.max(15, A_CADENCE - (performance.now() - envoi)));
+}
+
+function agarSnap(d){
+  const at = performance.now();
+  if(aCur) aGap += ((at - aCur.at) - aGap) * 0.12;   // intervalle réel lissé
+  aPrev = aCur || {at: at, d: d};
+  aCur = {at: at, d: d};
+  for(const m of d.journal || []){
+    aSeen = Math.max(aSeen, m.seq);
+    const el = document.createElement("div");
+    el.textContent = m.txt;
+    $("aFeed").appendChild(el);
+    setTimeout(() => el.remove(), 7000);
+    while($("aFeed").children.length > 5) $("aFeed").firstChild.remove();
+  }
+  // classement + bandeau — on ne touche au DOM que si ça a changé,
+  // sinon c'est un recalcul de mise en page 9 fois par seconde pour rien
+  const html = d.lead.map(l =>
+    `<li class="${l[2] ? "moi" : ""}"><span class="n">${esc(l[0])}</span>
+      <span class="m">${l[1]}</span></li>`).join("");
+  if(html !== agarSnap._lead){ agarSnap._lead = html;
+    $("aLeadList").innerHTML = html; }
+  $("aScore").innerHTML = d.vivant
+    ? `${d.masse} <span>de masse${d.rang ? " · " + d.rang + "ᵉ" : ""}</span>`
+    : `<span>mangé…</span>`;
+  $("aPop").textContent = `${d.joueurs} en piste · ${d.humains} humain`
+    + (d.humains > 1 ? "s" : "");
+  agarMort(d);
+}
+
+// ------------------------------------------------- écran de mort
+function agarMort(d){
+  const ov = $("aDead");
+  const key = d.vivant ? "" : "mort" + d.tueur + d.record;
+  if(key === aDeadKey) return;
+  aDeadKey = key;
+  if(d.vivant){ ov.style.display = "none"; return; }
+  ov.style.display = "flex";
+  ov.innerHTML = `<h2>Mangé !</h2>
+    <p>${d.tueur ? esc(d.tueur) + " t'a avalé." : "Tu as été avalé."}</p>
+    <p style="font-size:15px">Ta plus grosse masse : <b>${d.record}</b>
+      ${d.manges ? ` · tu en as mangé <b>${d.manges}</b>` : ""}</p>`;
+  const b = document.createElement("button");
+  b.className = "btn"; b.style.width = "auto";
+  b.textContent = "🔁 Revenir dans l'arène";
+  b.onclick = async () => {
+    b.disabled = true;
+    try{ await api("agar/respawn", {pid: aPid}); }catch(e){}
+    aPred = {}; aDeadKey = ""; ov.style.display = "none";
+  };
+  ov.appendChild(b);
+}
+
+// ------------------------------------------------- commandes
+function agarPointe(e){
+  const r = acv.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  aPointer = {x: t.clientX - r.left - r.width / 2,
+              y: t.clientY - r.top - r.height / 2};
+}
+acv.addEventListener("mousemove", agarPointe);
+acv.addEventListener("touchstart", e => { e.preventDefault(); agarPointe(e); },
+                     {passive: false});
+acv.addEventListener("touchmove", e => { e.preventDefault(); agarPointe(e); },
+                     {passive: false});
+$("aBtnSplit").onclick = () => { aSplit = true; };
+$("aBtnEject").onclick = () => { aEject = true; };
+addEventListener("keydown", e => {
+  if(!aRun || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))
+    return;
+  if(e.code === "Space"){ e.preventDefault(); aSplit = true; }
+  else if(e.key === "w" || e.key === "W"){ e.preventDefault(); aEject = true; }
+});
+
+// ------------------------------------------------- rendu
+function agarDraw(){
+  if(!aRun) return;
+  requestAnimationFrame(agarDraw);
+  if(!aCur) return;
+  const now = performance.now();
+  const dt = Math.min(0.05, (now - (agarDraw._t || now)) / 1000);
+  agarDraw._t = now;
+
+  // Position de rendu : EXACTEMENT un intervalle dans le passé. Au moment
+  // où un snapshot arrive, on rend le précédent (a = 0) et on glisse vers
+  // lui jusqu'au suivant (a = 1). Un retard plus grand renverrait avant le
+  // snapshot précédent : `a` écrêté à 0, donc figé — c'était ça, les à-coups.
+  // La gigue est absorbée par une courte extrapolation aux deux bouts
+  // plutôt que par une marge de retard.
+  const retard = Math.max(60, Math.min(300, aGap));
+  let a = 1;
+  if(aCur.at > aPrev.at) a = (now - retard - aPrev.at) / (aCur.at - aPrev.at);
+  a = Math.max(-0.25, Math.min(1.7, a));
+  const d = aCur.d;
+  const vieux = {};
+  for(const c of aPrev.d.cells) vieux[c[0]] = c;
+  const lerp = c => {
+    const p = vieux[c[0]];
+    return p ? [p[1] + (c[1] - p[1]) * a, p[2] + (c[2] - p[2]) * a]
+             : [c[1], c[2]];
+  };
+
+  // --- où sont mes cellules à cet instant (prédiction de l'image d'avant)
+  const vus = {};
+  let mx = 0, my = 0, mm = 0;
+  for(const c of d.cells){
+    if(!c[5]) continue;
+    vus[c[0]] = 1;
+    const p = aPred[c[0]];
+    const x = p ? p.x : c[1], y = p ? p.y : c[2];
+    mx += x * c[3]; my += y * c[3]; mm += c[3];
+  }
+  for(const id in aPred) if(!vus[id]) delete aPred[id];
+  const centre = mm ? {x: mx / mm, y: my / mm} : {x: d.cam[0], y: d.cam[1]};
+
+  const cw = acv.clientWidth, ch = acv.clientHeight;
+  // le serveur dit quel rayon de monde on doit voir ; sur un petit écran on
+  // arrête quand même de dézoomer, sinon on ne se voit plus soi-même
+  let sCible = Math.min(cw, ch) / (2 * d.demi);
+  const rMoi = aRayon(Math.max(24, d.masse));
+  sCible = Math.max(sCible, A_MIN_PX / rMoi);
+  aCam.s += (sCible - aCam.s) * Math.min(1, dt * 3);
+  const S = aCam.s;
+
+  // Le curseur se repère sur MES cellules, jamais sur la caméra : celle-ci
+  // est lissée, donc elle traîne derrière — la cible se retrouvait trop
+  // près (voire DERRIÈRE la cellule, qui reculait), et cellule -> caméra ->
+  // cible -> cellule formait une boucle de rétroaction qui oscillait.
+  if(aPointer){
+    aTarget.x = Math.max(0, Math.min(aMonde, centre.x + aPointer.x / S));
+    aTarget.y = Math.max(0, Math.min(aMonde, centre.y + aPointer.y / S));
+  }else{ aTarget.x = centre.x; aTarget.y = centre.y; }
+
+  // --- prédiction locale + recalage borné vers le serveur
+  let nx = 0, ny = 0, nm = 0;
+  for(const c of d.cells){
+    if(!c[5]) continue;
+    let p = aPred[c[0]];
+    if(!p) p = aPred[c[0]] = {x: c[1], y: c[2]};
+    // 1. on avance la prédiction d'une image
+    const [px, py] = aAvance(p.x, p.y, c[3], dt);
+    // 2. où le serveur en serait MAINTENANT : sa position, vieillie du
+    //    temps écoulé depuis l'arrivée + la moitié du ping
+    const age = Math.min(.4, (now - aCur.at + aPing / 2) / 1000);
+    const [tx, ty] = aAvance(c[1], c[2], c[3], age);
+    // 3. recalage PLAFONNÉ : au plus 35 % d'un pas, donc il ne peut jamais
+    //    inverser le mouvement à l'écran. Au-delà de 90 unités c'est une
+    //    vraie téléportation (division, fusion, réapparition) : on s'aligne.
+    const ex = tx - px, ey = ty - py, err = Math.hypot(ex, ey);
+    if(err > 90){ p.x = tx; p.y = ty; }
+    else if(err > 0.01){
+      const vmax = aVitesse(c[3]) * dt * 0.35;
+      const k = Math.min(err * 0.14, vmax) / err;
+      p.x = px + ex * k; p.y = py + ey * k;
+    }else{ p.x = px; p.y = py; }
+    nx += p.x * c[3]; ny += p.y * c[3]; nm += c[3];
+  }
+
+  // --- caméra : elle suit, elle ne commande plus rien
+  const suivi = nm ? {x: nx / nm, y: ny / nm} : centre;
+  aCam.x += (suivi.x - aCam.x) * Math.min(1, dt * 14);
+  aCam.y += (suivi.y - aCam.y) * Math.min(1, dt * 14);
+  const X = wx => (wx - aCam.x) * S + cw / 2;
+  const Y = wy => (wy - aCam.y) * S + ch / 2;
+
+  // --- fond (couleurs en cache : getComputedStyle à chaque image forçait
+  //     un recalcul de style 60 fois par seconde)
+  const css = aCouleurs();
+  actx.fillStyle = css.bg;
+  actx.fillRect(0, 0, cw, ch);
+  actx.strokeStyle = css.bord;
+  actx.lineWidth = 1;
+  actx.beginPath();
+  const pas = 100;
+  for(let x = Math.floor((aCam.x - cw / 2 / S) / pas) * pas;
+      x < aCam.x + cw / 2 / S + pas; x += pas){
+    actx.moveTo(X(x), 0); actx.lineTo(X(x), ch);
+  }
+  for(let y = Math.floor((aCam.y - ch / 2 / S) / pas) * pas;
+      y < aCam.y + ch / 2 / S + pas; y += pas){
+    actx.moveTo(0, Y(y)); actx.lineTo(cw, Y(y));
+  }
+  actx.stroke();
+  // hors du monde : on assombrit, le mur se voit sans qu'on l'explique
+  actx.save();
+  actx.beginPath();
+  actx.rect(0, 0, cw, ch);
+  actx.rect(X(0), Y(0), aMonde * S, aMonde * S);
+  actx.fillStyle = "rgba(120,110,95,.16)";
+  actx.fill("evenodd");
+  actx.restore();
+  actx.strokeStyle = css.mur;
+  actx.lineWidth = 3;
+  actx.strokeRect(X(0), Y(0), aMonde * S, aMonde * S);
+
+  // --- nourriture, crachats, virus
+  for(const f of d.food){
+    actx.fillStyle = aPal[f[2] % aPal.length];
+    actx.beginPath();
+    actx.arc(X(f[0]), Y(f[1]), Math.max(2.2, 5.6 * S), 0, 6.2832);
+    actx.fill();
+  }
+  for(const e of d.eject){
+    actx.fillStyle = aPal[e[3] % aPal.length];
+    actx.beginPath();
+    actx.arc(X(e[1]), Y(e[2]), aRayon(13) * S, 0, 6.2832);
+    actx.fill();
+  }
+  for(const v of d.virus){
+    const r = aRayon(115) * S, cx = X(v[0]), cy = Y(v[1]);
+    actx.beginPath();
+    for(let i = 0; i < 32; i++){
+      const ang = i / 32 * 6.2832;
+      const rr = r * (i % 2 ? 0.88 : 1.06);
+      const px = cx + Math.cos(ang) * rr, py = cy + Math.sin(ang) * rr;
+      i ? actx.lineTo(px, py) : actx.moveTo(px, py);
+    }
+    actx.closePath();
+    actx.fillStyle = "rgba(63,158,90,.22)";
+    actx.fill();
+    actx.strokeStyle = "#3f9e5a";
+    actx.lineWidth = 3;
+    actx.stroke();
+  }
+
+  // --- cellules : les petites dessous, les grosses par-dessus
+  const cells = d.cells.slice().sort((p, q) => p[3] - q[3]);
+  for(const c of cells){
+    let px, py;
+    if(c[5] && aPred[c[0]]){ px = aPred[c[0]].x; py = aPred[c[0]].y; }
+    else { const l = lerp(c); px = l[0]; py = l[1]; }
+    const r = aRayon(c[3]) * S, sx = X(px), sy = Y(py);
+    if(sx + r < -20 || sx - r > cw + 20 || sy + r < -20 || sy - r > ch + 20)
+      continue;
+    const col = aPal[c[4] % aPal.length];
+    actx.beginPath();
+    actx.arc(sx, sy, r, 0, 6.2832);
+    actx.fillStyle = col;
+    actx.fill();
+    actx.lineWidth = Math.max(1.5, r * 0.06);
+    actx.strokeStyle = aOmbre(col);
+    actx.stroke();
+    if(r > 10){
+      const f = Math.max(9, Math.min(30, r * 0.42));
+      actx.font = `700 ${f}px "Inter",sans-serif`;
+      actx.textAlign = "center";
+      actx.textBaseline = "middle";
+      actx.lineWidth = Math.max(2, f * 0.18);
+      actx.strokeStyle = "rgba(0,0,0,.45)";
+      actx.fillStyle = "#fff";
+      const dy = r > 34 ? -f * 0.32 : 0;
+      actx.strokeText(c[6], sx, sy + dy);
+      actx.fillText(c[6], sx, sy + dy);
+      if(r > 34){
+        const f2 = f * 0.62;
+        actx.font = `600 ${f2}px "IBM Plex Mono",monospace`;
+        actx.lineWidth = Math.max(1.5, f2 * 0.18);
+        actx.strokeText(Math.round(c[3]), sx, sy + f * 0.62);
+        actx.fillText(Math.round(c[3]), sx, sy + f * 0.62);
+      }
+    }
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# environnement Python cree par installation.bat
+.venv/
+venv/
+
+# caches Python
+__pycache__/
+*.py[cod]
+
+# comptes + sessions : la base est recreee toute seule au 1er lancement
+users.db
+
+# cloudflared, telecharge automatiquement par tunnel.py (54 Mo)
+.tools/
+
+# dossier genere par preparer_upload.bat
+pythonanywhere/
+*.zip
+
+# divers
+.claude/
+.DS_Store
+Thumbs.db

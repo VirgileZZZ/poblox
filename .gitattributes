@@ -1,0 +1,8 @@
+# normalise les fins de ligne dans le depot
+* text=auto
+
+# les .bat doivent rester en CRLF pour cmd.exe
+*.bat text eol=crlf
+
+# dictionnaires : gros fichiers texte, pas de diff utile
+dicts/*.txt -diff
